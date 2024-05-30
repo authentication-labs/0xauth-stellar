@@ -14,13 +14,23 @@ pub struct IdentityContract;
 
 #[contractimpl]
 impl IdentityContract {
+    pub fn get_initialized(env: Env) -> bool {
+        env.storage()
+            .instance()
+            .get::<Symbol, bool>(&Symbol::new(&env, "initialized"))
+            .unwrap_or(false)
+    }
+
     pub fn initialize(env: Env, initial_management_key: Address) {
         initial_management_key.require_auth();
+
         let initialized = env
             .storage()
             .instance()
-            .get::<Symbol, bool>(&Symbol::new(&env, "initialized"));
-        if initialized.is_some() {
+            .get::<Symbol, bool>(&Symbol::new(&env, "initialized"))
+            .unwrap_or(false);
+
+        if initialized {
             panic!("Contract already initialized");
         }
         env.storage()
@@ -43,6 +53,33 @@ impl IdentityContract {
         env.storage()
             .persistent()
             .set(&symbol_short!("keys"), &keys);
+
+        log!(
+            &env,
+            "Identity contract initialized with management key: {:?}",
+            initial_management_key
+        );
+    }
+
+    pub fn get_key(env: Env, key: Address) -> Key {
+        let key_hash = hash_key(&env, &key);
+        let keys = env
+            .storage()
+            .persistent()
+            .get::<Symbol, Vec<Key>>(&symbol_short!("keys"))
+            .unwrap_or(Vec::new(&env));
+
+        keys.iter()
+            .find(|k| k.key == key_hash)
+            .expect("Key not found")
+            .clone()
+    }
+
+    pub fn get_keys(env: Env) -> Vec<Key> {
+        env.storage()
+            .persistent()
+            .get::<Symbol, Vec<Key>>(&symbol_short!("keys"))
+            .unwrap_or(Vec::new(&env))
     }
 
     pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) {
@@ -99,7 +136,7 @@ impl IdentityContract {
         let key_purpose = KeyPurpose::try_from(purpose).expect("Invalid key purpose");
 
         // Retrieve and mutate the list of keys
-        let keys: Vec<Key> = env
+        let mut keys: Vec<Key> = env
             .storage()
             .persistent()
             .get::<Symbol, Vec<Key>>(&symbol_short!("keys"))
@@ -112,14 +149,22 @@ impl IdentityContract {
         for i in 0..keys.len() {
             let mut k = keys.get(i).expect("Index out of bounds");
             if k.key == key_hash {
-                if k.purposes.contains(&key_purpose) {
-                    k.purposes.remove(purpose);
-                    break;
+                if let Some(pos) = k.purposes.iter().position(|p| p == key_purpose) {
+                    k.purposes.remove(pos as u32);
                 } else {
                     panic!("Key does not have the specified purpose");
                 }
+
+                if k.purposes.is_empty() {
+                    keys.remove(i as u32);
+                }
             }
         }
+
+        
+
+        log!(&env, "Key removed: {:?}", keys);
+
 
         env.storage()
             .persistent()
@@ -138,10 +183,7 @@ impl IdentityContract {
         data: Bytes,
         uri: Bytes,
     ) {
-        let key_hash = hash_key(&env, &sender);
-        if !key_has_purpose(&env, &key_hash, KeyPurpose::Claim) {
-            panic!("Permissions: Sender does not have claim key");
-        }
+        identity_require_auth(&env, &sender, KeyPurpose::Claim);
         // TODO: Make Contract Call isClaimValid
 
         let claim_id = hash_claim(&env, &issuer, topic);
@@ -159,13 +201,13 @@ impl IdentityContract {
         log!(&env, "Claim added: {:?}", claim);
     }
 
-    pub fn remove_claim(env: Env, sender: Address, claim_id: Bytes) {
+    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) {
         identity_require_auth(&env, &sender, KeyPurpose::Claim);
 
         let claim = env
             .storage()
             .persistent()
-            .get::<Bytes, Claim>(&claim_id)
+            .get::<BytesN<32>, Claim>(&claim_id)
             .expect("Claim not found");
 
         env.storage().persistent().remove(&claim_id);
@@ -176,7 +218,7 @@ impl IdentityContract {
 }
 
 fn hash_key(env: &Env, key: &Address) -> BytesN<32> {
-    let address_bytes = Bytes::from_val(env, &key.to_val());
+    let address_bytes = Bytes::from_val(env, &key.to_xdr(&env));
     env.crypto().keccak256(&address_bytes)
 }
 
@@ -215,3 +257,5 @@ fn identity_require_auth(env: &Env, sender: &Address, key_type: KeyPurpose) {
 
     sender.require_auth();
 }
+
+mod test;
