@@ -1,6 +1,6 @@
 {
   "generators": {
-    "address": 4,
+    "address": 3,
     "nonce": 0
   },
   "auth": [
@@ -80,7 +80,7 @@
                   }
                 },
                 {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                 },
                 {
                   "bytes": "0000000e000000097369676e6174757265000000"
@@ -115,7 +115,7 @@
           "contract_data": {
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             "key": {
-              "bytes": "abc0a3502d312f186ba71d8e623ee31e2e7a088cf98ec9a2626b4b2227996860"
+              "bytes": "81a504e27ef43b28a9eebb1a31d8d55d244ad1ec60e00ae3411afaceb8905824"
             },
             "durability": "persistent"
           }
@@ -128,7 +128,7 @@
                 "ext": "v0",
                 "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
                 "key": {
-                  "bytes": "abc0a3502d312f186ba71d8e623ee31e2e7a088cf98ec9a2626b4b2227996860"
+                  "bytes": "81a504e27ef43b28a9eebb1a31d8d55d244ad1ec60e00ae3411afaceb8905824"
                 },
                 "durability": "persistent",
                 "val": {
@@ -146,7 +146,7 @@
                         "symbol": "issuer"
                       },
                       "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                       }
                     },
                     {
@@ -592,7 +592,7 @@
             "data": {
               "vec": [
                 {
-                  "string": "Identity contract initialized with management key: {:?}"
+                  "string": "claim issuer identity contract initialized with management key: {:?}"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
@@ -725,7 +725,7 @@
                   }
                 },
                 {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                 },
                 {
                   "bytes": "0000000e000000097369676e6174757265000000"
@@ -761,7 +761,7 @@
                   "string": "Adding claim with ID: {:?}"
                 },
                 {
-                  "bytes": "abc0a3502d312f186ba71d8e623ee31e2e7a088cf98ec9a2626b4b2227996860"
+                  "bytes": "81a504e27ef43b28a9eebb1a31d8d55d244ad1ec60e00ae3411afaceb8905824"
                 }
               ]
             }
@@ -802,7 +802,7 @@
                         "symbol": "issuer"
                       },
                       "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                       }
                     },
                     {
@@ -872,7 +872,7 @@
               }
             ],
             "data": {
-              "bytes": "abc0a3502d312f186ba71d8e623ee31e2e7a088cf98ec9a2626b4b2227996860"
+              "bytes": "81a504e27ef43b28a9eebb1a31d8d55d244ad1ec60e00ae3411afaceb8905824"
             }
           }
         }
@@ -898,7 +898,7 @@
               }
             ],
             "data": {
-              "bytes": "abc0a3502d312f186ba71d8e623ee31e2e7a088cf98ec9a2626b4b2227996860"
+              "bytes": "81a504e27ef43b28a9eebb1a31d8d55d244ad1ec60e00ae3411afaceb8905824"
             }
           }
         }
@@ -935,7 +935,7 @@
                     "symbol": "issuer"
                   },
                   "val": {
-                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                   }
                 },
                 {

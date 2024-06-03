@@ -448,7 +448,7 @@
             "data": {
               "vec": [
                 {
-                  "string": "Identity contract initialized with management key: {:?}"
+                  "string": "claim issuer identity contract initialized with management key: {:?}"
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"

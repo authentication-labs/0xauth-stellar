@@ -4,14 +4,20 @@ use soroban_sdk::{
     FromVal, Symbol, Vec, U256,
 };
 
-mod state;
-use state::{Claim, Key, KeyPurpose, KeyType};
-
 mod identity {
     soroban_sdk::contractimport!(
         file = "../../target/wasm32-unknown-unknown/release/identity.wasm"
     );
 }
+mod claim_issuer {
+    soroban_sdk::contractimport!(
+        file = "../../target/wasm32-unknown-unknown/release/claim_issuer.wasm"
+    );
+}
+
+mod state;
+use state::{Claim, Key, KeyPurpose, KeyType};
+
 
 #[contract]
 pub struct ClaimIssuerContract;
@@ -197,7 +203,15 @@ impl ClaimIssuerContract {
         uri: Bytes,
     ) -> BytesN<32> {
         identity_require_auth(&env, &sender, KeyPurpose::Claim);
-        // TODO: Make Contract Call isClaimValid
+        
+        let current_contact = env.current_contract_address();
+
+        if current_contact != issuer {
+            let client = claim_issuer::Client::new(&env, &issuer);
+            if client.is_claim_valid(&issuer, &topic, &signature, &data) {
+                panic!("Claim is not valid")
+            }
+        }
 
         let claim_id = hash_claim(&env, &issuer, &topic);
         log!(&env, "Adding claim with ID: {:?}", claim_id,);

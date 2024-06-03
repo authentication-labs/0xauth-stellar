@@ -79,7 +79,7 @@ fn test_add_claim() {
 
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
-    let issuer = Address::generate(&env);
+    let issuer = contract_id;
     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
@@ -116,7 +116,7 @@ fn test_remove_claim() {
 
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
-    let issuer = Address::generate(&env);
+    let issuer = contract_id;
     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));

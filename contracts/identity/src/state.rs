@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Bytes, BytesN, Vec, U256};
+use soroban_sdk::{contracttype,contracterror, Address, Bytes, BytesN, Vec, U256};
 
 #[contracttype]
 #[derive(Clone,Copy)]
@@ -60,4 +60,21 @@ pub struct Claim {
     pub signature: Bytes,
     pub data: Bytes,
     pub uri: Bytes,
+}
+
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum Error {
+    AlreadyInitialized = 1,
+    KeyNotFound = 2,
+    InvalidKeyPurpose = 3,
+    InvalidKeyType = 4,
+    KeyConflict = 5,
+    IndexOutOfBounds = 6,
+    ClaimNotFound = 7,
+    KeyDoesNotHavePurpose = 8,
+    ClaimAlreadyRevoked = 9,
+    InsufficientPermissions = 10,
+    InvalidSignature = 11,
 }

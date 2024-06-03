@@ -81,7 +81,7 @@ fn test_add_claim() {
 
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
-    let issuer = Address::generate(&env);
+    let issuer = contract_id;
     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
@@ -118,7 +118,7 @@ fn test_remove_claim() {
 
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
-    let issuer = Address::generate(&env);
+    let issuer = contract_id;
     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
@@ -141,28 +141,32 @@ fn test_revoke_claim() {
     env.mock_all_auths();
 
     let identity_contract_id = env.register_contract_wasm(None, identity::WASM);
+    let identity_client = identity::Client::new(&env, &identity_contract_id);
 
     let contract_id = env.register_contract(None, ClaimIssuerContract);
     let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
+    identity_client.initialize(&management_key);
 
     let claim_key = Address::generate(&env);
     client.add_key(&management_key, &claim_key, &3, &1);
+    identity_client.add_key(&management_key, &claim_key, &3, &1);
 
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
-    let issuer = Address::generate(&env);
+    let issuer = contract_id;
     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
 
     client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
+    identity_client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
 
-    let claim_id = hash_claim(&env, &issuer, &topic);
+    let claim_id: BytesN<32> = hash_claim(&env, &issuer, &topic);
 
-    client.revoke_claim(&claim_key, &identity_contract_id, &claim_id);
+    client.revoke_claim(&management_key, &identity_contract_id, &claim_id);
 
     // Verify that the claim has been revoked
     let claim = client.is_claim_revoked(&signature);
