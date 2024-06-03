@@ -3,13 +3,15 @@
 use super::*;
 use soroban_sdk::{testutils::Address as _, Address, Env};
 
+use crate::identity;
+
 #[test]
 fn test_initialize() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
-    let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
@@ -26,8 +28,8 @@ fn test_add_key() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
-    let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
@@ -46,8 +48,8 @@ fn test_remove_key() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
-    let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
@@ -68,8 +70,8 @@ fn test_add_claim() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
-    let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
@@ -105,8 +107,8 @@ fn test_remove_claim() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
-    let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
@@ -132,30 +134,38 @@ fn test_remove_claim() {
     assert!(claim.is_none(), "Claim should be removed");
 }
 
-// #[test]
-// fn test_is_claim_valid() {
-//     let env = Env::default();
-//     env.mock_all_auths();
 
-//     let contract_id = env.register_contract(None, IdentityContract);
-//     let client = IdentityContractClient::new(&env, &contract_id);
+#[test]
+fn test_revoke_claim() {
+    let env = Env::default();
+    env.mock_all_auths();
 
-//     let management_key = Address::generate(&env);
-//     client.initialize(&management_key);
+    let identity_contract_id = env.register_contract_wasm(None, identity::WASM);
 
-//     let claim_key = Address::generate(&env);
-//     client.add_key(&management_key, &claim_key, &3, &1);
+    let contract_id = env.register_contract(None, ClaimIssuerContract);
+    let client = ClaimIssuerContractClient::new(&env, &contract_id);
 
-//     let topic = U256::from_u32(&env, 6);
-//     let scheme = U256::from_u32(&env, 6);
-//     let issuer = Address::generate(&env);
-//     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
-//     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
-//     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
+    let management_key = Address::generate(&env);
+    client.initialize(&management_key);
 
-//     client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
+    let claim_key = Address::generate(&env);
+    client.add_key(&management_key, &claim_key, &3, &1);
 
-//     let valid = client.is_claim_valid(&issuer, &topic, &signature, &data);
+    let topic = U256::from_u32(&env, 6);
+    let scheme = U256::from_u32(&env, 6);
+    let issuer = Address::generate(&env);
+    let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
+    let data = Bytes::from_val(&env, &"data".to_xdr(&env));
+    let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
 
-//     assert_eq!(valid, true, "Claim should be valid");
-// }
+    client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
+
+    let claim_id = hash_claim(&env, &issuer, &topic);
+
+    client.revoke_claim(&claim_key, &identity_contract_id, &claim_id);
+
+    // Verify that the claim has been revoked
+    let claim = client.is_claim_revoked(&signature);
+    assert!(claim, "Claim should be revoked");
+}
+

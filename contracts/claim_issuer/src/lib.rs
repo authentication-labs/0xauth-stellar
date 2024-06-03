@@ -5,14 +5,19 @@ use soroban_sdk::{
 };
 
 mod state;
-
 use state::{Claim, Key, KeyPurpose, KeyType};
 
+mod identity {
+    soroban_sdk::contractimport!(
+        file = "../../target/wasm32-unknown-unknown/release/identity.wasm"
+    );
+}
+
 #[contract]
-pub struct IdentityContract;
+pub struct ClaimIssuerContract;
 
 #[contractimpl]
-impl IdentityContract {
+impl ClaimIssuerContract {
     pub fn get_initialized(env: Env) -> bool {
         env.storage()
             .instance()
@@ -55,7 +60,7 @@ impl IdentityContract {
 
         log!(
             &env,
-            "Identity contract initialized with management key: {:?}",
+            "claim issuer identity contract initialized with management key: {:?}",
             initial_management_key
         );
     }
@@ -249,6 +254,29 @@ impl IdentityContract {
         log!(&env, "Claim removed: {:?}", claim);
     }
 
+    pub fn revoke_claim(env: Env, sender: Address, contract: Address, claim_id: BytesN<32>) {
+        identity_require_auth(&env, &sender, KeyPurpose::Management);
+        let client = identity::Client::new(&env, &contract);
+
+        let claim = client.get_claim(&claim_id).expect("Claim not found");
+
+        let revoked_symbol = Symbol::new(&env, "revoked_claims");
+
+        let mut claims = env
+            .storage()
+            .persistent()
+            .get::<Symbol, Vec<Bytes>>(&revoked_symbol)
+            .unwrap_or(Vec::new(&env));
+
+        if claims.contains(&claim.signature) {
+            panic!("Claim already revoked");
+        }
+
+        claims.push_back(claim.signature.clone());
+
+        env.storage().persistent().set(&revoked_symbol, &claims);
+    }
+
     pub fn is_claim_valid(
         env: &Env,
         issuer: Address,
@@ -286,7 +314,19 @@ impl IdentityContract {
         let recovered_addr = Address::from_string_bytes(&recovered.to_xdr(env));
         let hashed_addr = env.crypto().keccak256(&recovered_addr.to_xdr(env));
 
-        key_has_purpose(env, &hashed_addr, KeyPurpose::Claim)
+        key_has_purpose(env, &hashed_addr, KeyPurpose::Claim) && !Self::is_claim_revoked(env, signature)
+    }
+
+    pub fn is_claim_revoked(env: &Env, signature: Bytes) -> bool {
+        let revoked_symbol = Symbol::new(&env, "revoked_claims");
+
+        let claims = env
+            .storage()
+            .persistent()
+            .get::<Symbol, Vec<Bytes>>(&revoked_symbol)
+            .unwrap_or(Vec::new(&env));
+
+        claims.contains(&signature)
     }
 }
 
