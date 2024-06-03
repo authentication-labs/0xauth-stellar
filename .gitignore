@@ -5,4 +5,4 @@ target
 .soroban
 
 # Test Snapshots
-**/test_snapshot/
+**/test_snapshots/
