@@ -77,4 +77,5 @@ pub enum Error {
     ClaimAlreadyRevoked = 9,
     InsufficientPermissions = 10,
     InvalidSignature = 11,
+    InvalidClaim = 12,
 }
