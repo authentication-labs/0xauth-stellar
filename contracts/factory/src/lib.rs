@@ -46,7 +46,7 @@ impl FactoryContract {
         Ok(())
     }
 
-    pub fn deploy(
+    pub fn create_identity(
         env: Env,
         deployer: Address,
         wasm_hash: BytesN<32>,

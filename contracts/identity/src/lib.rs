@@ -27,8 +27,6 @@ impl IdentityContract {
     }
 
     pub fn initialize(env: Env, initial_management_key: Address) -> Result<(), Error> {
-        initial_management_key.require_auth();
-
         let initialized = env
             .storage()
             .instance()
