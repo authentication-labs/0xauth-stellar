@@ -167,5 +167,3 @@ fn only_owner(env: &Env) {
         .unwrap();
     owner.require_auth();
 }
-
-mod test;
