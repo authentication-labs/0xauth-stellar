@@ -55,11 +55,6 @@ impl ClaimIssuerContract {
             key: key_hash.clone(),
         };
 
-        env.storage().persistent().set(&key_hash, &key);
-        env.storage()
-            .persistent()
-            .set(&Symbol::new(&env, "management_key"), &key_hash);
-
         let keys = vec![&env, key];
         env.storage()
             .persistent()

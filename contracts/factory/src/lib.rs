@@ -34,6 +34,7 @@ impl FactoryContract {
         if initialized {
             return Err(Error::AlreadyInitialized);
         }
+
         env.storage()
             .instance()
             .set(&Symbol::new(&env, "initialized"), &true);
@@ -64,7 +65,10 @@ impl FactoryContract {
             .with_address(deployer, salt)
             .deploy(wasm_hash);
 
+
         let res: Val = env.invoke_contract(&deployed_address, &init_fn, init_args);
+
+
         (deployed_address, res)
     }
 }
