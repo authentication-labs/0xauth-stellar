@@ -25,8 +25,6 @@ impl FactoryContract {
     }
 
     pub fn initialize(env: Env, owner: Address) -> Result<(), Error> {
-        owner.require_auth();
-
         let initialized = env
             .storage()
             .instance()
