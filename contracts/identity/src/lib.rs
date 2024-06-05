@@ -1,4 +1,5 @@
 #![no_std]
+
 use soroban_sdk::{
     contract, contractimpl, log, symbol_short, vec, xdr::ToXdr, Address, Bytes, BytesN, Env,
     FromVal, Symbol, Vec, U256,
@@ -202,6 +203,7 @@ impl IdentityContract {
         sender: Address,
         topic: U256,
         scheme: U256,
+        issuer_wallet: BytesN<32>,
         issuer: Address,
         signature: Bytes,
         data: Bytes,
@@ -213,7 +215,7 @@ impl IdentityContract {
 
         if current_contact != issuer {
             let client = claim_issuer::Client::new(&env, &issuer);
-            if client.is_claim_valid(&issuer, &topic, &signature, &data) {
+            if client.is_claim_valid(&issuer_wallet, &current_contact, &topic, &signature, &data) {
                 return Err(Error::InvalidClaim);
             }
         }
@@ -275,12 +277,14 @@ impl IdentityContract {
 
     pub fn is_claim_valid(
         env: &Env,
-        issuer: Address,
+        issuer_wallet: BytesN<32>,
+        identity: Address,
         topic: U256,
         signature: Bytes,
         data: Bytes,
     ) -> Result<bool, Error> {
-        let address_bytes = Bytes::from_val(env, &issuer.to_xdr(&env));
+        
+        let address_bytes = Bytes::from_val(env, &identity.to_xdr(&env));
         let topic_bytes = Bytes::from_val(env, &topic.to_xdr(env));
 
         let mut concatenated_bytes = Bytes::new(env);
@@ -288,27 +292,19 @@ impl IdentityContract {
         concatenated_bytes.append(&topic_bytes);
         concatenated_bytes.append(&data);
 
-        let data_hash = env.crypto().keccak256(&concatenated_bytes);
-
-        let mut digest_bytes = Bytes::from_slice(&env, b"\x19Ethereum Signed Message:\n32");
-        digest_bytes.append(&data_hash.to_xdr(env));
-        let prefixed_hash = env.crypto().keccak256(&digest_bytes);
+        let data_hash = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
 
         let signature_slice: BytesN<64> = signature
             .slice(..64)
             .try_into()
             .map_err(|_| Error::InvalidSignature)?;
 
-        let recovery_id = match signature.get(64) {
-            Some(v) => (v + 27) as u32,
-            None => return Err(Error::InvalidSignature),
-        };
+        env.crypto()
+            .ed25519_verify(&issuer_wallet, &data_hash, &signature_slice);
 
-        let recovered: BytesN<65> =
-            env.crypto()
-                .secp256k1_recover(&prefixed_hash, &signature_slice, recovery_id);
-        let recovered_addr = Address::from_string_bytes(&recovered.to_xdr(env));
-        let hashed_addr = env.crypto().keccak256(&recovered_addr.to_xdr(env));
+
+        let issuer_addr = Address::from_string_bytes(&issuer_wallet.to_xdr(&env));
+        let hashed_addr = hash_key(env, &issuer_addr);
 
         Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim))
     }

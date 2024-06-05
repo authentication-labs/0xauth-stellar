@@ -1,7 +1,12 @@
 #![cfg(test)]
-
+extern crate std;
 use super::*;
+use ed25519_dalek::ed25519::signature::{Keypair, SignerMut};
+use soroban_sdk::xdr::ScVal;
 use soroban_sdk::{testutils::Address as _, Address, Env};
+use soroban_sdk::testutils::ed25519::Sign;
+use ed25519_dalek::SigningKey;
+use base32::{Alphabet, encode};
 
 #[test]
 fn test_initialize() {
@@ -160,28 +165,38 @@ fn test_remove_claim() {
 
 // #[test]
 // fn test_is_claim_valid() {
+
+//     let sk = SigningKey::from_bytes(
+//         &hex::decode("d1a54e6424182f5c0a83cb5b71a835ff407466b792ddb029fe4c53dcb8f18845")
+//             .unwrap()
+//             .try_into()
+//             .unwrap(),
+//     );
+
 //     let env = Env::default();
 //     env.mock_all_auths();
 
 //     let contract_id = env.register_contract(None, IdentityContract);
 //     let client = IdentityContractClient::new(&env, &contract_id);
 
-//     let management_key = Address::generate(&env);
-//     client.initialize(&management_key);
-
-//     let claim_key = Address::generate(&env);
-//     client.add_key(&management_key, &claim_key, &3, &1);
-
 //     let topic = U256::from_u32(&env, 6);
-//     let scheme = U256::from_u32(&env, 6);
-//     let issuer = Address::generate(&env);
-//     let signature = Bytes::from_val(&env, &"signature".to_xdr(&env));
+//     let issuer = contract_id;
 //     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
-//     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
 
-//     client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
+//     let mut concatenated_bytes = Bytes::new(&env);
+//     concatenated_bytes.append(&issuer.clone().to_xdr(&env));
+//     concatenated_bytes.append(&topic.clone().to_xdr(&env));
+//     concatenated_bytes.append(&data);
 
-//     let valid = client.is_claim_valid(&issuer, &topic, &signature, &data);
+//     let hashed_bytes: ScVal = env.crypto().keccak256(&concatenated_bytes).to_array().try_into().unwrap();
+//     let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
+
+//     let signature = Bytes::from_slice(&env, &sigtest_val);
+
+//     let pk = sk.verifying_key();
+//     let public_key_bytes = BytesN::from_array(&env, &pk.to_bytes());
+
+//     let valid = client.is_claim_valid(&public_key_bytes,&issuer, &topic, &signature, &data);
 
 //     assert_eq!(valid, true, "Claim should be valid");
 // }
