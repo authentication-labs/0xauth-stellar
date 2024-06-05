@@ -32,7 +32,7 @@ impl ClaimIssuerContract {
             .unwrap_or(false))
     }
 
-    pub fn initialize(env: Env, initial_management_key: Address) -> Result<bool, Error> {
+    pub fn initialize(env: Env, initial_management_key: Address) -> Result<(), Error> {
         let initialized = env
             .storage()
             .instance()
@@ -63,7 +63,7 @@ impl ClaimIssuerContract {
             "Identity contract initialized with management key: {:?}",
             initial_management_key
         );
-        Ok(true)
+        Ok(())
     }
 
     pub fn get_key(env: Env, key: Address) -> Result<Key, Error> {
@@ -87,7 +87,7 @@ impl ClaimIssuerContract {
             .unwrap_or(Vec::new(&env)))
     }
 
-    pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) -> Result<bool, Error> {
+    pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) -> Result<(), Error> {
         // Only the manager can add keys
         identity_require_auth(&env, &manager, KeyPurpose::Management)?;
 
@@ -130,10 +130,10 @@ impl ClaimIssuerContract {
             .set(&symbol_short!("keys"), &keys);
 
         // TODO: Emit Key Add Event
-        Ok(true)
+        Ok(())
     }
 
-    pub fn remove_key(env: Env, manager: Address, key: Address, purpose: u32) -> Result<bool, Error> {
+    pub fn remove_key(env: Env, manager: Address, key: Address, purpose: u32) -> Result<(), Error> {
         // Only the manager can remove keys
         identity_require_auth(&env, &manager, KeyPurpose::Management)?;
 
@@ -171,7 +171,7 @@ impl ClaimIssuerContract {
             .persistent()
             .set(&symbol_short!("keys"), &keys);
         // TODO: Emit Key Removed Event
-        Ok(true)
+        Ok(())
     }
 
     pub fn get_claim(env: Env, claim_id: BytesN<32>) -> Result<Option<Claim>, Error> {
@@ -234,7 +234,7 @@ impl ClaimIssuerContract {
         Ok(claim_id)
     }
 
-    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<bool, Error>  {
+    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error>  {
         identity_require_auth(&env, &sender, KeyPurpose::Claim)?;
 
         let claim = env
@@ -261,7 +261,7 @@ impl ClaimIssuerContract {
 
         // TODO: Call emitClaimRemoved
         log!(&env, "Claim removed: {:?}", claim);
-        Ok(true)
+        Ok(())
     }
 
     pub fn is_claim_valid(
@@ -304,7 +304,7 @@ impl ClaimIssuerContract {
         Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim))
     }
 
-    pub fn revoke_claim(env: Env, sender: Address, contract: Address, claim_id: BytesN<32>) -> Result<bool, Error>{
+    pub fn revoke_claim(env: Env, sender: Address, contract: Address, claim_id: BytesN<32>) -> Result<(), Error>{
         identity_require_auth(&env, &sender, KeyPurpose::Management)?;
         let client = identity::Client::new(&env, &contract);
 
@@ -326,7 +326,7 @@ impl ClaimIssuerContract {
 
         env.storage().persistent().set(&revoked_symbol, &claims);
 
-        Ok(true)
+        Ok(())
     }
 
     pub fn is_claim_revoked(env: &Env, signature: Bytes) -> Result<bool, Error> {
