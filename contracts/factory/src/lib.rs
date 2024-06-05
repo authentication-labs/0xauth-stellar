@@ -48,22 +48,17 @@ impl FactoryContract {
 
     pub fn create_identity(
         env: Env,
-        deployer: Address,
         wasm_hash: BytesN<32>,
         wallet: Address,
         salt: BytesN<32>,
         init_fn: Symbol,
         init_args: Vec<Val>,
     ) -> (Address, Val) {
-        if deployer != env.current_contract_address() {
-            deployer.require_auth();
-        } else {
-            only_owner(&env);
-        }
+        let owner = only_owner(&env);
 
         let identity_address = env
             .deployer()
-            .with_address(deployer, salt)
+            .with_address(owner, salt)
             .deploy(wasm_hash);
 
         let res: Val = env.invoke_contract(&identity_address, &init_fn, init_args);
@@ -159,11 +154,13 @@ impl FactoryContract {
     
 }
 
-fn only_owner(env: &Env) {
+fn only_owner(env: &Env) -> Address {
     let owner: Address = env
         .storage()
         .instance()
         .get(&symbol_short!("owner"))
         .unwrap();
     owner.require_auth();
+
+    owner
 }

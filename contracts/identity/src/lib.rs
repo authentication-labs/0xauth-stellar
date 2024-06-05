@@ -26,7 +26,7 @@ impl IdentityContract {
             .unwrap_or(false))
     }
 
-    pub fn initialize(env: Env, initial_management_key: Address) -> Result<(), Error> {
+    pub fn initialize(env: Env, initial_management_key: Address) -> Result<bool, Error> {
         let initialized = env
             .storage()
             .instance()
@@ -57,7 +57,7 @@ impl IdentityContract {
             "Identity contract initialized with management key: {:?}",
             initial_management_key
         );
-        Ok(())
+        Ok(true)
     }
 
     pub fn get_key(env: Env, key: Address) -> Result<Key, Error> {
@@ -81,7 +81,7 @@ impl IdentityContract {
             .unwrap_or(Vec::new(&env)))
     }
 
-    pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) -> Result<(), Error> {
+    pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) -> Result<bool, Error> {
         // Only the manager can add keys
         identity_require_auth(&env, &manager, KeyPurpose::Management)?;
 
@@ -124,10 +124,10 @@ impl IdentityContract {
             .set(&symbol_short!("keys"), &keys);
 
         // TODO: Emit Key Add Event
-        Ok(())
+        Ok(true)
     }
 
-    pub fn remove_key(env: Env, manager: Address, key: Address, purpose: u32) -> Result<(), Error> {
+    pub fn remove_key(env: Env, manager: Address, key: Address, purpose: u32) -> Result<bool, Error> {
         // Only the manager can remove keys
         identity_require_auth(&env, &manager, KeyPurpose::Management)?;
 
@@ -165,7 +165,7 @@ impl IdentityContract {
             .persistent()
             .set(&symbol_short!("keys"), &keys);
         // TODO: Emit Key Removed Event
-        Ok(())
+        Ok(true)
     }
 
     pub fn get_claim(env: Env, claim_id: BytesN<32>) -> Result<Option<Claim>, Error> {
@@ -174,7 +174,7 @@ impl IdentityContract {
             .get::<BytesN<32>, Claim>(&claim_id))
     }
 
-    pub fn get_claims(env: Env) -> Result<Vec<BytesN<32>>, Error> {
+    pub fn get_claim_ids(env: Env) -> Result<Vec<BytesN<32>>, Error> {
         Ok(env
             .storage()
             .persistent()
@@ -228,7 +228,7 @@ impl IdentityContract {
         Ok(claim_id)
     }
 
-    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error>  {
+    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<bool, Error>  {
         identity_require_auth(&env, &sender, KeyPurpose::Claim)?;
 
         let claim = env
@@ -255,7 +255,7 @@ impl IdentityContract {
 
         // TODO: Call emitClaimRemoved
         log!(&env, "Claim removed: {:?}", claim);
-        Ok(())
+        Ok(true)
     }
 
     pub fn is_claim_valid(
