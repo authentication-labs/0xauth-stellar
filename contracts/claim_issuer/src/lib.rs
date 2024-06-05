@@ -87,7 +87,13 @@ impl ClaimIssuerContract {
             .unwrap_or(Vec::new(&env)))
     }
 
-    pub fn add_key(env: Env, manager: Address, key: Address, purpose: u32, key_type: u32) -> Result<(), Error> {
+    pub fn add_key(
+        env: Env,
+        manager: Address,
+        key: Address,
+        purpose: u32,
+        key_type: u32,
+    ) -> Result<(), Error> {
         // Only the manager can add keys
         identity_require_auth(&env, &manager, KeyPurpose::Management)?;
 
@@ -111,6 +117,7 @@ impl ClaimIssuerContract {
                     return Err(Error::KeyConflict);
                 } else {
                     k.purposes.push_back(key_purpose);
+                    keys.set(i, k);
                     key_found = true;
                     break;
                 }
@@ -148,22 +155,28 @@ impl ClaimIssuerContract {
             .get::<Symbol, Vec<Key>>(&symbol_short!("keys"))
             .unwrap_or(Vec::new(&env));
 
-            if !keys.iter().any(|k| k.key == key_hash) {
-                return Err(Error::KeyNotFound);
-            }
+        if !keys.iter().any(|k| k.key == key_hash) {
+            return Err(Error::KeyNotFound);
+        }
 
         for i in 0..keys.len() {
-            let mut k = keys.get(i).ok_or(Error::IndexOutOfBounds)?;
-            if k.key == key_hash {
-                if let Some(pos) = k.purposes.iter().position(|p| p == key_purpose) {
-                    k.purposes.remove(pos as u32);
-                } else {
-                    return Err(Error::KeyDoesNotHavePurpose);
-                }
+            if let Some(mut k) = keys.get(i) {
+                if k.key == key_hash {
+                    if let Some(pos) = k.purposes.iter().position(|p| p == key_purpose) {
+                        k.purposes.remove(pos as u32);
 
-                if k.purposes.is_empty() {
-                    keys.remove(i as u32);
+                        if k.purposes.is_empty() {
+                            keys.remove(i as u32);
+                        } else {
+                            keys.set(i, k);
+                        }
+                    } else {
+                        return Err(Error::KeyDoesNotHavePurpose);
+                    }
+                    break;
                 }
+            } else {
+                return Err(Error::IndexOutOfBounds);
             }
         }
 

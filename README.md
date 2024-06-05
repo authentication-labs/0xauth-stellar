@@ -27,7 +27,7 @@ soroban contract install \
 ```
 **Output WASM Hash**
 ```
-30843f3c484179f9cdebc91f753386006ab6a48197906f081cc41581328519a4
+b6317ef91e13ff18ea05ca27b4421a93d71dac55e391d6d0e9d2acabf804ea61
 ```
 
 2. Deploy Factory Contract
@@ -69,7 +69,7 @@ soroban contract invoke \
   --source factory \
   --network testnet \
   -- \
-  create_identity --wasm_hash 30843f3c484179f9cdebc91f753386006ab6a48197906f081cc41581328519a4 --wallet GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --salt 0123484789abcdfe0123456789abcdef0123456789abcdef0123456789abcdfe --init_fn initialize --init_args '[{"address": "GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}]'
+  create_identity --wasm_hash b6317ef91e13ff18ea05ca27b4421a93d71dac55e391d6d0e9d2acabf804ea61 --wallet GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --salt 0123484789abcdfe0123456789abcdef0123456789abcdef0123456789abcdfe --init_fn initialize --init_args '[{"address": "GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}]'
 ```
 
 **Output Identity Contract ID**

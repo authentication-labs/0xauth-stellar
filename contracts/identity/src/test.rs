@@ -42,6 +42,32 @@ fn test_add_key() {
 }
 
 #[test]
+fn test_add_key_with_different_purpose() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register_contract(None, IdentityContract);
+    let client = IdentityContractClient::new(&env, &contract_id);
+
+    let management_key = Address::generate(&env);
+    client.initialize(&management_key);
+
+    client.add_key(&management_key, &management_key, &3, &1);
+
+    // Verify that the key has been added
+    let keys = client.get_keys();
+
+    assert!(keys.iter().any(|k| k.key == hash_key(&env, &management_key)), "Key should be added");
+
+    // Verify that the key has the correct purpose
+    let key = keys.iter().find(|k| k.key == hash_key(&env, &management_key)).unwrap();
+
+    // Check Purposes array
+    assert_eq!(key.purposes.len(), 2, "Key should have two purpose");
+
+}
+
+#[test]
 fn test_remove_key() {
     let env = Env::default();
     env.mock_all_auths();
