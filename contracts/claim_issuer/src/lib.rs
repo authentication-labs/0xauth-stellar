@@ -16,8 +16,7 @@ mod claim_issuer {
 }
 
 mod state;
-use state::{Claim, Key, KeyPurpose, KeyType, Error};
-
+use state::{Claim, Error, Key, KeyPurpose, KeyType};
 
 #[contract]
 pub struct ClaimIssuerContract;
@@ -81,7 +80,8 @@ impl ClaimIssuerContract {
     }
 
     pub fn get_keys(env: Env) -> Result<Vec<Key>, Error> {
-        Ok(env.storage()
+        Ok(env
+            .storage()
             .persistent()
             .get::<Symbol, Vec<Key>>(&symbol_short!("keys"))
             .unwrap_or(Vec::new(&env)))
@@ -188,7 +188,8 @@ impl ClaimIssuerContract {
     }
 
     pub fn get_claim(env: Env, claim_id: BytesN<32>) -> Result<Option<Claim>, Error> {
-        Ok(env.storage()
+        Ok(env
+            .storage()
             .persistent()
             .get::<BytesN<32>, Claim>(&claim_id))
     }
@@ -242,13 +243,17 @@ impl ClaimIssuerContract {
 
         claims.push_back(claim_id.clone());
 
+        env.storage()
+            .persistent()
+            .set(&symbol_short!("claims"), &claims);
+
         // TODO: Call emitClaimAdded
         log!(&env, "Claim added: {:?}", claim);
 
         Ok(claim_id)
     }
 
-    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error>  {
+    pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error> {
         identity_require_auth(&env, &sender, KeyPurpose::Claim)?;
 
         let claim = env
@@ -299,7 +304,7 @@ impl ClaimIssuerContract {
         };
 
         let issuer_xdr = issuer_wallet.clone().to_xdr(env);
-      
+
         let issuer_bytes: BytesN<32> = match issuer_xdr.slice(12..44).try_into() {
             Ok(slice) => slice,
             Err(_) => return Err(Error::InvalidAddressBytes),
@@ -310,10 +315,16 @@ impl ClaimIssuerContract {
 
         let hashed_addr = hash_key(env, &issuer_wallet);
 
-        Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim) && !Self::is_claim_revoked(env, signature)?)
+        Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim)
+            && !Self::is_claim_revoked(env, signature)?)
     }
 
-    pub fn revoke_claim(env: Env, sender: Address, contract: Address, claim_id: BytesN<32>) -> Result<(), Error>{
+    pub fn revoke_claim(
+        env: Env,
+        sender: Address,
+        contract: Address,
+        claim_id: BytesN<32>,
+    ) -> Result<(), Error> {
         identity_require_auth(&env, &sender, KeyPurpose::Management)?;
         let client = identity::Client::new(&env, &contract);
 

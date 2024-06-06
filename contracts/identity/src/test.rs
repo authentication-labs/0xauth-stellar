@@ -184,9 +184,12 @@ fn test_is_claim_valid() {
     let management_key = Address::generate(&env);
     client.initialize(&management_key);
 
+    let issuer = Address::from_string(&soroban_sdk::String::from_str(
+        &env,
+        "CD32UHM2YHGENPHQBD4UQC4TOS3G6MUGLY65DVCJHK4YJF2HAEQIARNT",
+    ));
     let topic = U256::from_u32(&env, 6);
-    let issuer = contract_id;
-    let data = Bytes::from_val(&env, &"data".to_xdr(&env));
+    let data = "data".to_xdr(&env);
 
     let mut concatenated_bytes = Bytes::new(&env);
     concatenated_bytes.append(&issuer.clone().to_xdr(&env));
@@ -199,8 +202,9 @@ fn test_is_claim_valid() {
         .to_array()
         .try_into()
         .unwrap();
-    let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
 
+    let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
+    std::println!("Signature: {:?}", sigtest_val);
     let signature = Bytes::from_slice(&env, &sigtest_val);
 
     let pk = sk.verifying_key();

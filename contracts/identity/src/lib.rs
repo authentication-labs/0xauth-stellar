@@ -240,6 +240,10 @@ impl IdentityContract {
 
         claims.push_back(claim_id.clone());
 
+        env.storage()
+            .persistent()
+            .set(&symbol_short!("claims"), &claims);
+
         // TODO: Call emitClaimAdded
         log!(&env, "Claim added: {:?}", claim);
 
