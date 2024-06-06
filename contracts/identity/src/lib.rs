@@ -216,7 +216,7 @@ impl IdentityContract {
 
         if current_contact != issuer {
             let client = claim_issuer::Client::new(&env, &issuer);
-            if client.is_claim_valid(&issuer_wallet, &current_contact, &topic, &signature, &data) {
+            if !client.is_claim_valid(&issuer_wallet, &current_contact, &topic, &signature, &data) {
                 return Err(Error::InvalidClaim);
             }
         }
@@ -293,7 +293,8 @@ impl IdentityContract {
         concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
-        let data_hash = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
+        let data_hash = env.crypto().keccak256(&concatenated_bytes);
+        let bata_digest = Bytes::from_array(env, &data_hash.to_array());
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
             Ok(slice) => slice,
@@ -301,14 +302,14 @@ impl IdentityContract {
         };
 
         let issuer_xdr = issuer_wallet.clone().to_xdr(env);
-      
+
         let issuer_bytes: BytesN<32> = match issuer_xdr.slice(12..44).try_into() {
             Ok(slice) => slice,
             Err(_) => return Err(Error::InvalidAddressBytes),
         };
 
         env.crypto()
-            .ed25519_verify(&issuer_bytes, &data_hash, &signature_slice);
+            .ed25519_verify(&issuer_bytes, &bata_digest, &signature_slice);
 
         let hashed_addr = hash_key(env, &issuer_wallet);
 

@@ -219,7 +219,7 @@ impl ClaimIssuerContract {
 
         if current_contact != issuer {
             let client = claim_issuer::Client::new(&env, &issuer);
-            if client.is_claim_valid(&issuer_wallet, &current_contact, &topic, &signature, &data) {
+            if !client.is_claim_valid(&issuer_wallet, &current_contact, &topic, &signature, &data) {
                 return Err(Error::InvalidClaim);
             }
         }
@@ -296,7 +296,8 @@ impl ClaimIssuerContract {
         concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
-        let data_hash = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
+        let data_hash = env.crypto().keccak256(&concatenated_bytes);
+        let bata_digest = Bytes::from_array(env, &data_hash.to_array());
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
             Ok(slice) => slice,
@@ -311,7 +312,7 @@ impl ClaimIssuerContract {
         };
 
         env.crypto()
-            .ed25519_verify(&issuer_bytes, &data_hash, &signature_slice);
+            .ed25519_verify(&issuer_bytes, &bata_digest, &signature_slice);
 
         let hashed_addr = hash_key(env, &issuer_wallet);
 

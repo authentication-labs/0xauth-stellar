@@ -204,7 +204,6 @@ fn test_is_claim_valid() {
         .unwrap();
 
     let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
-    std::println!("Signature: {:?}", sigtest_val);
     let signature = Bytes::from_slice(&env, &sigtest_val);
 
     let pk = sk.verifying_key();
