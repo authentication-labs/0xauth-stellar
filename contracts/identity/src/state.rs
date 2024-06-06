@@ -78,4 +78,6 @@ pub enum Error {
     InsufficientPermissions = 10,
     InvalidSignature = 11,
     InvalidClaim = 12,
+    InvalidIssuer = 13,
+    InvalidAddressBytes = 14,
 }

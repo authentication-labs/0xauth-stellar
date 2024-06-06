@@ -1,12 +1,14 @@
 #![cfg(test)]
 extern crate std;
+
 use super::*;
-use ed25519_dalek::ed25519::signature::{Keypair, SignerMut};
+use base32::{decode as base32_decode, encode as base32_encode, Alphabet};
+use crc16::{State, XMODEM};
+use ed25519_dalek::SigningKey;
+use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::xdr::ScVal;
 use soroban_sdk::{testutils::Address as _, Address, Env};
-use soroban_sdk::testutils::ed25519::Sign;
-use ed25519_dalek::SigningKey;
-use base32::{Alphabet, encode};
+use std::string::String;
 
 #[test]
 fn test_initialize() {
@@ -163,40 +165,108 @@ fn test_remove_claim() {
     assert!(claim.is_none(), "Claim should be removed");
 }
 
-// #[test]
-// fn test_is_claim_valid() {
+#[test]
+fn test_is_claim_valid() {
+    // I made this Secret Key  for testing, do not use it anywhere else
+    let sk = SigningKey::from_bytes(
+        &hex::decode("b51a482a459d1b2f8f1ff5b7159cdbf0ab23ee46422ed0724f2822cd550ecf71")
+            .unwrap()
+            .try_into()
+            .unwrap(),
+    );
 
-//     let sk = SigningKey::from_bytes(
-//         &hex::decode("d1a54e6424182f5c0a83cb5b71a835ff407466b792ddb029fe4c53dcb8f18845")
-//             .unwrap()
-//             .try_into()
-//             .unwrap(),
-//     );
+    let env = Env::default();
+    env.mock_all_auths();
 
-//     let env = Env::default();
-//     env.mock_all_auths();
+    let contract_id = env.register_contract(None, IdentityContract);
+    let client = IdentityContractClient::new(&env, &contract_id);
 
-//     let contract_id = env.register_contract(None, IdentityContract);
-//     let client = IdentityContractClient::new(&env, &contract_id);
+    let management_key = Address::generate(&env);
+    client.initialize(&management_key);
 
-//     let topic = U256::from_u32(&env, 6);
-//     let issuer = contract_id;
-//     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
+    let topic = U256::from_u32(&env, 6);
+    let issuer = contract_id;
+    let data = Bytes::from_val(&env, &"data".to_xdr(&env));
 
-//     let mut concatenated_bytes = Bytes::new(&env);
-//     concatenated_bytes.append(&issuer.clone().to_xdr(&env));
-//     concatenated_bytes.append(&topic.clone().to_xdr(&env));
-//     concatenated_bytes.append(&data);
+    let mut concatenated_bytes = Bytes::new(&env);
+    concatenated_bytes.append(&issuer.clone().to_xdr(&env));
+    concatenated_bytes.append(&topic.clone().to_xdr(&env));
+    concatenated_bytes.append(&data);
 
-//     let hashed_bytes: ScVal = env.crypto().keccak256(&concatenated_bytes).to_array().try_into().unwrap();
-//     let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
+    let hashed_bytes: ScVal = env
+        .crypto()
+        .keccak256(&concatenated_bytes)
+        .to_array()
+        .try_into()
+        .unwrap();
+    let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
 
-//     let signature = Bytes::from_slice(&env, &sigtest_val);
+    let signature = Bytes::from_slice(&env, &sigtest_val);
 
-//     let pk = sk.verifying_key();
-//     let public_key_bytes = BytesN::from_array(&env, &pk.to_bytes());
+    let pk = sk.verifying_key();
+    let pk_bytes: [u8; 32] = pk.to_bytes();
 
-//     let valid = client.is_claim_valid(&public_key_bytes,&issuer, &topic, &signature, &data);
+    if let Some(stellar_pub_key) = encode_stellar_pub_key(&pk_bytes) {
+        std::println!("Stellar Public Key: {}", stellar_pub_key);
+        let issuer_wallet = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            stellar_pub_key.as_str(),
+        ));
 
-//     assert_eq!(valid, true, "Claim should be valid");
-// }
+        client.add_key(&management_key, &issuer_wallet, &3, &1);
+
+        let valid = client.is_claim_valid(&issuer_wallet, &issuer, &topic, &signature, &data);
+
+        assert_eq!(valid, true, "Claim should be valid");
+    } else {
+        std::println!("Failed to encode the Stellar public key.");
+    }
+}
+
+fn decode_stellar_pub_key(pub_key: &str) -> Option<[u8; 32]> {
+    let decoded = base32_decode(Alphabet::Rfc4648 { padding: false }, pub_key)?;
+    if decoded.len() != 35 {
+        return None;
+    }
+
+    // std::println!("Decoded: {:?}", decoded);
+
+    let checksum = &decoded[33..];
+    let payload = &decoded[..33];
+
+    // std::println!("Payload: {:?}", payload);
+    // std::println!("Checksum: {:?}", checksum);
+
+    // Verify checksum
+    let mut state = State::<XMODEM>::new();
+    state.update(payload);
+    let calculated_checksum = state.get();
+
+    // std::println!("Calculated Checksum: {:?}", calculated_checksum.to_le_bytes());
+
+    if calculated_checksum.to_le_bytes() != [checksum[0], checksum[1]] {
+        return None;
+    }
+
+    let mut key = [0u8; 32];
+    key.copy_from_slice(&payload[1..33]);
+    Some(key)
+}
+
+fn encode_stellar_pub_key(pub_key_bytes: &[u8; 32]) -> Option<String> {
+    let mut payload = std::vec![0x30];
+    payload.extend_from_slice(pub_key_bytes);
+
+    let mut state = State::<XMODEM>::new();
+    state.update(&payload);
+    let checksum = state.get().to_le_bytes();
+
+    std::println!("Payload: {:?}", payload);
+    std::println!("Checksum: {:?}", checksum);
+
+    payload.extend_from_slice(&checksum);
+
+    let encoded = base32_encode(Alphabet::Rfc4648 { padding: false }, &payload);
+
+    Some(encoded)
+}

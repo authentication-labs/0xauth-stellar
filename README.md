@@ -118,7 +118,7 @@ soroban contract invoke \
   --source factory \
   --network testnet \
   -- \
-  create_identity --wasm_hash 3033769358c8b90be7b9f827424a7dbf59f487703f585e7b9e6a6fde734237e2 --wallet GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --salt 0123484789abcdfe0123456789abcdef0123456789abcdef0123456789abcdfe --init_fn initialize --init_args '[{"address": "GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}]'
+  create_identity --wasm_hash 3033769358c8b90be7b9f827424a7dbf59f487703f585e7b9e6a6fde734237e2 --wallet GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --salt 1023484789abcdfe0123456789abcdef0123456789abcdef0123456789abcdfe --init_fn initialize --init_args '[{"address": "GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}]'
 ```
 
 **Output Identity Contract ID**

@@ -206,7 +206,7 @@ impl ClaimIssuerContract {
         sender: Address,
         topic: U256,
         scheme: U256,
-        issuer_wallet: BytesN<32>,
+        issuer_wallet: Address,
         issuer: Address,
         signature: Bytes,
         data: Bytes,
@@ -280,36 +280,37 @@ impl ClaimIssuerContract {
 
     pub fn is_claim_valid(
         env: &Env,
-        issuer_wallet: BytesN<32>,
+        issuer_wallet: Address,
         identity: Address,
         topic: U256,
         signature: Bytes,
         data: Bytes,
     ) -> Result<bool, Error> {
-        
-        let address_bytes = Bytes::from_val(env, &identity.to_xdr(&env));
-        let topic_bytes = Bytes::from_val(env, &topic.to_xdr(env));
-
         let mut concatenated_bytes = Bytes::new(env);
-        concatenated_bytes.append(&address_bytes);
-        concatenated_bytes.append(&topic_bytes);
+        concatenated_bytes.append(&identity.clone().to_xdr(&env));
+        concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
         let data_hash = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
 
-        let signature_slice: BytesN<64> = signature
-            .slice(..64)
-            .try_into()
-            .map_err(|_| Error::InvalidSignature)?;
+        let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
+            Ok(slice) => slice,
+            Err(_) => return Err(Error::InvalidSignature),
+        };
+
+        let issuer_xdr = issuer_wallet.clone().to_xdr(env);
+      
+        let issuer_bytes: BytesN<32> = match issuer_xdr.slice(12..44).try_into() {
+            Ok(slice) => slice,
+            Err(_) => return Err(Error::InvalidAddressBytes),
+        };
 
         env.crypto()
-            .ed25519_verify(&issuer_wallet, &data_hash, &signature_slice);
+            .ed25519_verify(&issuer_bytes, &data_hash, &signature_slice);
 
+        let hashed_addr = hash_key(env, &issuer_wallet);
 
-        let issuer_addr = Address::from_string_bytes(&issuer_wallet.to_xdr(&env));
-        let hashed_addr = hash_key(env, &issuer_addr);
-
-        Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim))
+        Ok(key_has_purpose(env, &hashed_addr, KeyPurpose::Claim) && !Self::is_claim_revoked(env, signature)?)
     }
 
     pub fn revoke_claim(env: Env, sender: Address, contract: Address, claim_id: BytesN<32>) -> Result<(), Error>{

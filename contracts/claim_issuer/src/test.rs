@@ -123,7 +123,7 @@ fn test_remove_claim() {
     let data = Bytes::from_val(&env, &"data".to_xdr(&env));
     let uri = Bytes::from_val(&env, &"uri".to_xdr(&env));
 
-    client.add_claim(&claim_key, &topic, &scheme, &issuer, &signature, &data, &uri);
+    client.add_claim(&claim_key, &topic, &scheme, &issuer, &issuer, &signature, &data, &uri);
 
     let claim_id = hash_claim(&env, &issuer, &topic);
 
