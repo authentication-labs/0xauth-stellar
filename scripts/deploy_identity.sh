@@ -13,29 +13,29 @@ IDENTITY_WASM_HASH=$(soroban contract install \
 echo "Identity WASM Hash: $IDENTITY_WASM_HASH"
 echo
 
-# # Step 2: Deploy Factory Contract
-# echo "Deploying Factory Contract..."
-# FACTORY_CONTRACT_ID=$(soroban contract deploy \
-#   --wasm target/wasm32-unknown-unknown/release/factory.wasm \
-#   --source factory \
-#   --network testnet | grep -oP '(?<=Contract ID: )\w+')
-# echo "Factory Contract ID: $FACTORY_CONTRACT_ID"
-# echo
+# Step 2: Deploy Factory Contract
+echo "Deploying Factory Contract..."
+FACTORY_CONTRACT_ID=$(soroban contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/factory.wasm \
+  --source factory \
+  --network testnet | grep -oP '(?<=Contract ID: )\w+')
+echo "Factory Contract ID: $FACTORY_CONTRACT_ID"
+echo
 
 
-FACTORY_CONTRACT_ID="CDRHGLONE56BNO7DOTYYG64V2D75XWCJTVWGQRDS5GBFV5UCPR2MSOTX"
-# # Step 3: Initialize Factory Contract
-# FACTORY_WALLET_ADDRESS="GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"
-# echo "Initializing Factory Contract..."
-# INITIALIZE_FACTORY_OUTPUT=$(soroban contract invoke \
-#   --id $FACTORY_CONTRACT_ID \
-#   --source factory \
-#   --network testnet \
-#   -- \
-#   initialize --owner $FACTORY_WALLET_ADDRESS)
-# echo "Initialize Factory Output:"
-# echo "$INITIALIZE_FACTORY_OUTPUT"
-# echo
+# FACTORY_CONTRACT_ID="CDRHGLONE56BNO7DOTYYG64V2D75XWCJTVWGQRDS5GBFV5UCPR2MSOTX"
+# Step 3: Initialize Factory Contract
+FACTORY_WALLET_ADDRESS="GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"
+echo "Initializing Factory Contract..."
+INITIALIZE_FACTORY_OUTPUT=$(soroban contract invoke \
+  --id $FACTORY_CONTRACT_ID \
+  --source factory \
+  --network testnet \
+  -- \
+  initialize --owner $FACTORY_WALLET_ADDRESS)
+echo "Initialize Factory Output:"
+echo "$INITIALIZE_FACTORY_OUTPUT"
+echo
 
 # Step 4: Deploy Identity Contract Through Factory
 WALLET_ADDRESS="GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"
