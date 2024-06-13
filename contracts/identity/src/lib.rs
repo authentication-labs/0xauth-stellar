@@ -1,9 +1,8 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contractimpl, log, symbol_short, vec,
-    xdr::ToXdr,
-    Address, Bytes, BytesN, Env, FromVal, Symbol, Vec, U256,
+    contract, contractimpl, log, symbol_short, vec, xdr::ToXdr, Address, Bytes, BytesN, Env,
+    FromVal, Symbol, Vec, U256,
 };
 
 mod state;
@@ -294,7 +293,7 @@ impl IdentityContract {
         concatenated_bytes.append(&data);
 
         let data_hash = env.crypto().keccak256(&concatenated_bytes);
-        let bata_digest = Bytes::from_array(env, &data_hash.to_array());
+        let data_digest = Bytes::from_array(env, &data_hash.to_array());
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
             Ok(slice) => slice,
@@ -309,7 +308,7 @@ impl IdentityContract {
         };
 
         env.crypto()
-            .ed25519_verify(&issuer_bytes, &bata_digest, &signature_slice);
+            .ed25519_verify(&issuer_bytes, &data_digest, &signature_slice);
 
         let hashed_addr = hash_key(env, &issuer_wallet);
 

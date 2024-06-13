@@ -18,7 +18,7 @@ echo "Deploying Factory Contract..."
 FACTORY_CONTRACT_ID=$(soroban contract deploy \
   --wasm target/wasm32-unknown-unknown/release/factory.wasm \
   --source factory \
-  --network testnet | grep -oP '(?<=Contract ID: )\w+')
+  --network testnet)
 echo "Factory Contract ID: $FACTORY_CONTRACT_ID"
 echo
 
