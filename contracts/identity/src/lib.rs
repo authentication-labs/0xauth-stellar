@@ -292,8 +292,7 @@ impl IdentityContract {
         concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
-        let data_hash = env.crypto().keccak256(&concatenated_bytes);
-        let data_digest = Bytes::from_array(env, &data_hash.to_array());
+        let data_digest = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
             Ok(slice) => slice,

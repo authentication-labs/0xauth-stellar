@@ -296,8 +296,7 @@ impl ClaimIssuerContract {
         concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
-        let data_hash = env.crypto().keccak256(&concatenated_bytes);
-        let bata_digest = Bytes::from_array(env, &data_hash.to_array());
+        let data_digest = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
             Ok(slice) => slice,
@@ -312,7 +311,7 @@ impl ClaimIssuerContract {
         };
 
         env.crypto()
-            .ed25519_verify(&issuer_bytes, &bata_digest, &signature_slice);
+            .ed25519_verify(&issuer_bytes, &data_digest, &signature_slice);
 
         let hashed_addr = hash_key(env, &issuer_wallet);
 

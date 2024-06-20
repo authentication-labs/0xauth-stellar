@@ -13,6 +13,7 @@ use std::string::String;
 
 use crate::claim_issuer;
 
+
 #[test]
 fn test_initialize() {
     let env = Env::default();
@@ -249,67 +250,87 @@ fn test_remove_claim() {
     assert!(claim.is_none(), "Claim should be removed");
 }
 
-// #[test]
-// fn test_is_claim_valid() {
-//     // I made this Secret Key  for testing, do not use it anywhere else
-//     let sk = SigningKey::from_bytes(
-//         &hex::decode("b51a482a459d1b2f8f1ff5b7159cdbf0ab23ee46422ed0724f2822cd550ecf71")
-//             .unwrap()
-//             .try_into()
-//             .unwrap(),
-//     );
+#[test]
+fn test_is_claim_valid() {
+    // I made this Secret Key  for testing, do not use it anywhere else
+    let sk = SigningKey::from_bytes(
+        &hex::decode("b51a482a459d1b2f8f1ff5b7159cdbf0ab23ee46422ed0724f2822cd550ecf71")
+            .unwrap()
+            .try_into()
+            .unwrap(),
+    );
 
-//     let env = Env::default();
-//     env.mock_all_auths();
+    let env = Env::default();
+    env.mock_all_auths();
 
-//     let contract_id = env.register_contract(None, IdentityContract);
-//     let client = IdentityContractClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, IdentityContract);
+    let client = IdentityContractClient::new(&env, &contract_id);
 
-//     let management_key = Address::generate(&env);
-//     client.initialize(&management_key);
+    let management_key = Address::generate(&env);
+    client.initialize(&management_key);
 
-//     let identity = Address::from_string(&soroban_sdk::String::from_str(
-//         &env,
-//         "CD32UHM2YHGENPHQBD4UQC4TOS3G6MUGLY65DVCJHK4YJF2HAEQIARNT",
-//     ));
-//     let topic = U256::from_u32(&env, 6);
-//     let data = Bytes::from_slice(&env, "data".as_bytes());
+    let identity = Address::from_string(&soroban_sdk::String::from_str(
+        &env,
+        "CD32UHM2YHGENPHQBD4UQC4TOS3G6MUGLY65DVCJHK4YJF2HAEQIARNT",
+    ));
+    let topic = U256::from_u32(&env, 6);
+    let data = Bytes::from_slice(&env, "data".as_bytes());
 
-//     let mut concatenated_bytes = Bytes::new(&env);
-//     concatenated_bytes.append(&identity.clone().to_xdr(&env));
-//     concatenated_bytes.append(&topic.clone().to_xdr(&env));
-//     concatenated_bytes.append(&data);
+    let mut concatenated_bytes = Bytes::new(&env);
+    concatenated_bytes.append(&identity.clone().to_xdr(&env));
+    concatenated_bytes.append(&topic.clone().to_xdr(&env));
+    concatenated_bytes.append(&data);
 
-//     let hashed_bytes: ScVal = env
-//         .crypto()
-//         .keccak256(&concatenated_bytes)
-//         .to_array()
-//         .try_into()
-//         .unwrap();
+    let hashed_bytes: ScVal = env
+        .crypto()
+        .keccak256(&concatenated_bytes)
+        .to_array()
+        .try_into()
+        .unwrap();
 
-//     let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
-//     let signature = Bytes::from_slice(&env, &sigtest_val);
+    let sigtest_val: [u8; 64] = sk.sign(hashed_bytes).unwrap();
+    let signature = Bytes::from_slice(&env, &sigtest_val);
 
-//     let pk = sk.verifying_key();
-//     let pk_bytes: [u8; 32] = pk.to_bytes();
+    let pk = sk.verifying_key();
+    let pk_bytes: [u8; 32] = pk.to_bytes();
 
+    if let Some(stellar_pub_key) = encode_stellar_pub_key(&pk_bytes) {
+        std::println!("Stellar Public Key: {}", stellar_pub_key);
+        let issuer_wallet = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            stellar_pub_key.as_str(),
+        ));
 
-//     if let Some(stellar_pub_key) = encode_stellar_pub_key(&pk_bytes) {
-//         std::println!("Stellar Public Key: {}", stellar_pub_key);
-//         let issuer_wallet = Address::from_string(&soroban_sdk::String::from_str(
-//             &env,
-//             stellar_pub_key.as_str(),
-//         ));
+        client.add_key(&management_key, &issuer_wallet, &3, &1);
 
-//         client.add_key(&management_key, &issuer_wallet, &3, &1);
+        let valid = client.is_claim_valid(&issuer_wallet, &identity, &topic, &signature, &data);
 
-//         let valid = client.is_claim_valid(&issuer_wallet, &identity, &topic, &signature, &data);
+        assert_eq!(valid, true, "Claim should be valid");
+    } else {
+        std::println!("Failed to encode the Stellar public key.");
+    }
+}
 
-//         assert_eq!(valid, true, "Claim should be valid");
-//     } else {
-//         std::println!("Failed to encode the Stellar public key.");
-//     }
-// }
+#[test]
+fn test_ed25519_verify() {
+    let env = Env::default();
+    let data: Bytes = "data".to_xdr(&env);
+
+    let sk = SigningKey::from_bytes(
+        &hex::decode("b51a482a459d1b2f8f1ff5b7159cdbf0ab23ee46422ed0724f2822cd550ecf71")
+            .unwrap()
+            .try_into()
+            .unwrap(),
+    );
+    let pk_bytes: [u8; 32] = sk.verifying_key().to_bytes();
+    let pk: BytesN<32> = BytesN::from_array(&env, &pk_bytes);
+    
+    let sc_val_data: ScVal = data.clone().try_into().unwrap();
+    let sigtest_val: [u8; 64] = sk.sign(sc_val_data.clone()).unwrap();
+    let signature_bytes: BytesN<64> = BytesN::from_array(&env, &sigtest_val);
+
+    env.crypto().ed25519_verify(&pk, &sc_val_data.to_xdr(&env), &signature_bytes);
+}
 
 fn decode_stellar_pub_key(pub_key: &str) -> Option<[u8; 32]> {
     let decoded = base32_decode(Alphabet::Rfc4648 { padding: false }, pub_key)?;
