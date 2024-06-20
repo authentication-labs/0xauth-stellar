@@ -399,5 +399,3 @@ fn identity_require_auth(env: &Env, sender: &Address, key_type: KeyPurpose) -> R
     sender.require_auth();
     Ok(())
 }
-
-mod test;

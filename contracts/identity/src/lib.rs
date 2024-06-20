@@ -292,6 +292,8 @@ impl IdentityContract {
         concatenated_bytes.append(&topic.to_xdr(&env));
         concatenated_bytes.append(&data);
 
+        // Make sure the Signature was also signed in the XDR format
+        // Otherwise, the signature will be invalid
         let data_digest = env.crypto().keccak256(&concatenated_bytes).to_xdr(&env);
 
         let signature_slice: BytesN<64> = match signature.slice(..64).try_into() {
