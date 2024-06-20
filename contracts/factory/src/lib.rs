@@ -90,11 +90,15 @@ impl FactoryContract {
             .unwrap_or(Vec::new(&env));
 
 
-        wallets.push_back(wallet);
+        wallets.push_back(wallet.clone());
 
         env.storage()
             .instance()
             .set(&identity, &wallets);
+
+        env.storage()
+            .instance()
+            .set(&wallet, &identity);
     }
 
     pub fn unlink_wallet(env: Env, wallet: Address, identity: Address) {
@@ -114,6 +118,8 @@ impl FactoryContract {
         env.storage()
             .instance()
             .set(&identity, &wallets);
+
+        env.storage().instance().remove(&wallet);
     }
 
     pub fn get_wallets(env: Env, identity: Address) -> Vec<Address> {
@@ -125,6 +131,7 @@ impl FactoryContract {
 
         wallets
     }
+
     pub fn get_identity(env: Env, wallet: Address) -> Address {
         let identity: Address = env
             .storage()
@@ -164,3 +171,5 @@ fn only_owner(env: &Env) -> Address {
 
     owner
 }
+
+mod test;
