@@ -57,6 +57,7 @@ pub struct Claim {
     pub topic: U256,
     pub scheme: U256,
     pub issuer: Address,
+    pub issuer_wallet: Address,
     pub signature: Bytes,
     pub data: Bytes,
     pub uri: Bytes,

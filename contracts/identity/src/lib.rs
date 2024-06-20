@@ -225,6 +225,7 @@ impl IdentityContract {
             topic,
             scheme,
             issuer,
+            issuer_wallet,
             signature,
             data,
             uri,

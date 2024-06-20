@@ -13,6 +13,11 @@ mod claim_issuer {
         file = "../../target/wasm32-unknown-unknown/release/claim_issuer.wasm"
     );
 }
+mod identity {
+    soroban_sdk::contractimport!(
+        file = "../../target/wasm32-unknown-unknown/release/identity.wasm"
+    );
+}
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -81,18 +86,37 @@ impl GatedContract {
         env.storage().persistent().set(&symbol_short!("factory"), &factory);
     }
 
+    // Validate a claim
+    // 1. Get the Identity of the sender from the factory
+    // 2. Generate the claim id
+    // 3. Get the claim from the identity
+    // 4. Extract topic, signature, data from the claim
+    // 4. Call is_claim_valid on the claim issuer
+
     pub fn validate_claim(env: Env, sender: Address,  issuer: Address, required_topic: U256) -> bool {
+
+        // Get the factory address
         let factory_address = env.storage()
         .persistent()
             .get(&symbol_short!("factory"))
             .unwrap();
 
         let factory_client = factory::Client::new(&env, &factory_address);
+        // Get the identity of the sender
         let user_identity = factory_client.get_identity(&sender);
+
+        // Generate the claim id
         let claim_id = hash_claim(&env, &issuer, &required_topic);
-        let issuer_client = claim_issuer::Client::new(&env, &user_identity);
-        let claim = issuer_client.get_claim(&claim_id).unwrap();
-        return  issuer_client.is_claim_valid(&issuer, &claim.issuer, &claim.topic, &claim.signature, &claim.data);
+
+        // Get the identity client
+        let identity_client = identity::Client::new(&env, &user_identity);
+
+        // Get Claim
+        let claim = identity_client.get_claim(&claim_id).unwrap();
+
+        // Get the claim issuer client
+        let issuer_client = claim_issuer::Client::new(&env, &issuer);
+        return  issuer_client.is_claim_valid(&claim.issuer_wallet, &user_identity, &claim.topic, &claim.signature, &claim.data);
 
     }
 
