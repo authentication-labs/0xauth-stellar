@@ -92,7 +92,6 @@ impl GatedContract {
     // 3. Get the claim from the identity
     // 4. Extract topic, signature, data from the claim
     // 4. Call is_claim_valid on the claim issuer
-
     pub fn validate_claim(env: Env, sender: Address,  issuer: Address, required_topic: U256) -> bool {
 
         // Get the factory address
@@ -112,7 +111,10 @@ impl GatedContract {
         let identity_client = identity::Client::new(&env, &user_identity);
 
         // Get Claim
-        let claim = identity_client.get_claim(&claim_id).unwrap();
+        let claim = match identity_client.get_claim(&claim_id) {
+            Some(claim) => claim,
+            None => return false,
+        };
 
         // Get the claim issuer client
         let issuer_client = claim_issuer::Client::new(&env, &issuer);

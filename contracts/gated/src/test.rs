@@ -2,13 +2,10 @@
 extern crate std;
 
 use super::*;
-use base32::{decode as base32_decode, encode as base32_encode, Alphabet};
-use crc16::{State, XMODEM};
 use ed25519_dalek::SigningKey;
 use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::xdr::ScVal;
 use soroban_sdk::{testutils::Address as _, Address, Env};
-use std::string::String;
 
 use crate::claim_issuer;
 use crate::factory;
@@ -78,6 +75,15 @@ fn test_validate_claim() {
     let user_wallet = Address::generate(&env);
     factory_client.link_wallet(&user_wallet, &identity_contract_id);
 
+    std::println!("User Wallet: {:?}", user_wallet);
+    std::println!("Identity Contract: {:?}", identity_contract_id);
+
+    let linked_identity = factory_client.get_identity(&user_wallet);
+
+    assert!(
+        linked_identity == identity_contract_id,
+        "Identity should be linked to wallet");
+
     // Create Claim
     let topic = U256::from_u32(&env, 6);
     let scheme = U256::from_u32(&env, 6);
@@ -111,6 +117,10 @@ fn test_validate_claim() {
         &uri,
     );
 
+    let claim_id_hex = hex::encode(claim_id.to_array());
+
+    std::println!("Claim ID: {:?}", claim_id_hex);
+
     // Verify that the claim has been added
     match identity_client.get_claim(&claim_id) {
         Some(claim) => claim,
@@ -118,7 +128,7 @@ fn test_validate_claim() {
     };
 
     assert_eq!(
-        gated_client.validate_claim(&user_wallet, &issuer_wallet, &topic),
+        gated_client.validate_claim(&user_wallet, &issuer, &topic),
         true,
         "Claim should be valid"
     );
