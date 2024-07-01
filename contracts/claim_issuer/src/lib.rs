@@ -32,18 +32,18 @@ impl ClaimIssuerContract {
     }
 
     pub fn initialize(env: Env, initial_management_key: Address) -> Result<(), Error> {
+        let init_symbol = Symbol::new(&env, "initialized");
+
         let initialized = env
             .storage()
             .instance()
-            .get::<Symbol, bool>(&Symbol::new(&env, "initialized"))
+            .get::<Symbol, bool>(&init_symbol)
             .unwrap_or(false);
 
         if initialized {
             return Err(Error::AlreadyInitialized);
         }
-        env.storage()
-            .instance()
-            .set(&Symbol::new(&env, "initialized"), &true);
+        env.storage().instance().set(&init_symbol, &true);
 
         let key_hash = hash_key(&env, &initial_management_key);
         let key = Key {
@@ -62,6 +62,8 @@ impl ClaimIssuerContract {
             "Identity contract initialized with management key: {:?}",
             initial_management_key
         );
+
+        env.events().publish((init_symbol,), initial_management_key);
         Ok(())
     }
 
@@ -136,7 +138,11 @@ impl ClaimIssuerContract {
             .persistent()
             .set(&symbol_short!("keys"), &keys);
 
-        // TODO: Emit Key Add Event
+        env.events().publish(
+            (symbol_short!("add_key"),),
+            (manager, key, purpose, key_type),
+        );
+
         Ok(())
     }
 
@@ -183,7 +189,10 @@ impl ClaimIssuerContract {
         env.storage()
             .persistent()
             .set(&symbol_short!("keys"), &keys);
-        // TODO: Emit Key Removed Event
+
+        env.events()
+            .publish((Symbol::new(&env, "remove_key"),), (manager, key, purpose));
+
         Ok(())
     }
 
@@ -248,8 +257,12 @@ impl ClaimIssuerContract {
             .persistent()
             .set(&symbol_short!("claims"), &claims);
 
-        // TODO: Call emitClaimAdded
         log!(&env, "Claim added: {:?}", claim);
+
+        env.events().publish(
+            (symbol_short!("add_claim"),),
+            (sender, claim_id.clone(), claim.topic, claim.scheme, claim.issuer, claim.issuer_wallet,claim.signature, claim.data, claim.uri)
+        );
 
         Ok(claim_id)
     }
@@ -279,8 +292,13 @@ impl ClaimIssuerContract {
             .persistent()
             .set(&symbol_short!("claims"), &claims);
 
-        // TODO: Call emitClaimRemoved
         log!(&env, "Claim removed: {:?}", claim);
+
+        env.events().publish(
+            (Symbol::new(&env, "remove_claim"),),
+            (sender, claim_id)
+        );
+
         Ok(())
     }
 
@@ -346,6 +364,11 @@ impl ClaimIssuerContract {
         claims.push_back(claim.signature.clone());
 
         env.storage().persistent().set(&revoked_symbol, &claims);
+
+        env.events().publish(
+            (Symbol::new(&env, "revoke_claim"),),
+            (sender, claim_id)
+        );
 
         Ok(())
     }
