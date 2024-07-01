@@ -1,6 +1,6 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, symbol_short, Address,  BytesN, Env, Symbol, Val, Vec
+    contract, contracterror, contractimpl, symbol_short, Address, BytesN, Env, Symbol, Val, Vec,
 };
 
 #[contracterror]
@@ -25,23 +25,25 @@ impl FactoryContract {
     }
 
     pub fn initialize(env: Env, owner: Address) -> Result<(), Error> {
+        let init_symbol = Symbol::new(&env, "initialized");
+
         let initialized = env
             .storage()
             .instance()
-            .get::<Symbol, bool>(&Symbol::new(&env, "initialized"))
+            .get::<Symbol, bool>(&init_symbol)
             .unwrap_or(false);
 
         if initialized {
             return Err(Error::AlreadyInitialized);
         }
 
-        env.storage()
-            .instance()
-            .set(&Symbol::new(&env, "initialized"), &true);
+        env.storage().instance().set(&init_symbol, &true);
 
         env.storage()
             .instance()
             .set(&symbol_short!("owner"), &owner);
+
+        env.events().publish((init_symbol,), owner);
 
         Ok(())
     }
@@ -56,12 +58,9 @@ impl FactoryContract {
     ) -> (Address, Val) {
         let owner = only_owner(&env);
 
-        let identity_address = env
-            .deployer()
-            .with_address(owner, salt)
-            .deploy(wasm_hash);
+        let identity_address = env.deployer().with_address(owner, salt.clone()).deploy(wasm_hash);
 
-        let res: Val = env.invoke_contract(&identity_address, &init_fn, init_args);
+        let res: Val = env.invoke_contract(&identity_address, &init_fn, init_args.clone());
 
         env.storage().instance().set(&wallet, &identity_address);
 
@@ -71,11 +70,11 @@ impl FactoryContract {
             .get::<Address, Vec<Address>>(&identity_address)
             .unwrap_or(Vec::new(&env));
 
-        wallets.push_back(wallet);
+        wallets.push_back(wallet.clone());
 
-        env.storage()
-            .instance()
-            .set(&identity_address, &wallets);
+        env.storage().instance().set(&identity_address, &wallets);
+
+        env.events().publish((Symbol::new(&env, "create_identity"),), (wallet, identity_address.clone(), salt, init_fn, init_args));
 
         (identity_address, res)
     }
@@ -89,16 +88,13 @@ impl FactoryContract {
             .get::<Address, Vec<Address>>(&identity)
             .unwrap_or(Vec::new(&env));
 
-
         wallets.push_back(wallet.clone());
 
-        env.storage()
-            .instance()
-            .set(&identity, &wallets);
+        env.storage().instance().set(&identity, &wallets);
 
-        env.storage()
-            .instance()
-            .set(&wallet, &identity);
+        env.storage().instance().set(&wallet, &identity);
+
+        env.events().publish((Symbol::new(&env, "link_wallet"),), (wallet, identity));
     }
 
     pub fn unlink_wallet(env: Env, wallet: Address, identity: Address) {
@@ -115,11 +111,11 @@ impl FactoryContract {
             wallets.remove(index as u32);
         }
 
-        env.storage()
-            .instance()
-            .set(&identity, &wallets);
+        env.storage().instance().set(&identity, &wallets);
 
         env.storage().instance().remove(&wallet);
+
+        env.events().publish((Symbol::new(&env, "unlink_wallet"),), (wallet, identity));
     }
 
     pub fn get_wallets(env: Env, identity: Address) -> Vec<Address> {
@@ -133,11 +129,7 @@ impl FactoryContract {
     }
 
     pub fn get_identity(env: Env, wallet: Address) -> Address {
-        let identity: Address = env
-            .storage()
-            .instance()
-            .get(&wallet)
-            .unwrap();
+        let identity: Address = env.storage().instance().get(&wallet).unwrap();
         identity
     }
 
@@ -156,9 +148,9 @@ impl FactoryContract {
         env.storage()
             .instance()
             .set(&symbol_short!("owner"), &owner);
-    }
 
-    
+        env.events().publish((Symbol::new(&env, "set_owner"),), owner);
+    }
 }
 
 fn only_owner(env: &Env) -> Address {
