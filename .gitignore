@@ -1,0 +1,14 @@
+# Rust's output directory
+target
+
+# Local Soroban settings
+.soroban
+
+# Test Snapshots
+**/test_snapshots/
+
+# Node modules
+bridgeActions/node_modules
+bridgeActions/.env
+bridgeActions/dist
+bridgeActions/.DS_Store
