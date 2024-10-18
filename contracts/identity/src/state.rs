@@ -43,12 +43,23 @@ impl TryFrom<u32> for KeyPurpose {
     }
 }
 
+<<<<<<< HEAD
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct Key {
     pub purposes: Vec<u8>,     // Use Vec<u8> for purposes
     pub key_type: u8,          // Use u8 for key type
     pub key: [u8; 32],         // Fixed-size array for the key
 }
+=======
+#[contracttype]
+#[derive(Clone)]
+pub struct Key {
+    pub purposes: Vec<KeyPurpose>,
+    pub key_type: KeyType,
+    pub key: BytesN<32>,
+}
+
+>>>>>>> main
 #[contracttype]
 #[derive(Clone)]
 pub struct Claim {
