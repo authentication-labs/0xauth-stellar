@@ -6,3 +6,11 @@ target
 
 # Test Snapshots
 **/test_snapshots/
+
+.DS_Store
+
+# Node modules
+bridgeActions/node_modules
+bridgeActions/.env
+bridgeActions/dist
+bridgeActions/.DS_Store
