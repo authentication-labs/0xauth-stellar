@@ -1,6 +1,5 @@
 use soroban_sdk::{contracttype, contracterror, Address, Bytes, BytesN, Vec, U256};
 
-
 #[contracttype]
 #[derive(Clone,Copy)]
 pub enum KeyType {
