@@ -3,11 +3,11 @@ const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
     entry: {
-        createIdentityAddKey: './stellar_actions/create_identity.js',
-        addKeyStellar: './stellar_actions/add_key.js',
-        addClaimStellar: './stellar_actions/add_claim.js',
-        removeKeyStellar: './stellar_actions/remove_claim.js',
-        removeClaimStellar: './stellar_actions/remove_key.js'
+        createIdentityAddKey: './createIdentityAddKey.js',
+        addKeyStellar: './addKeyStellar.js',
+        addClaimStellar: './addClaimStellar.js',
+        removeKeyStellar: './removeKeyStellar.js',
+        removeClaimStellar: './removeClaimStellar.js'
     },
     target: 'node',
     externals: [nodeExternals({
@@ -24,7 +24,7 @@ module.exports = {
     })],
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].bundle.js',
+        filename: '[name]/index.js',
         libraryTarget: 'commonjs2',
     },
     module: {
