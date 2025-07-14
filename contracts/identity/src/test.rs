@@ -10,14 +10,16 @@ use soroban_sdk::xdr::ScVal;
 use soroban_sdk::{testutils::Address as _, Address, Env};
 use std::string::String;
 
-use crate::claim_issuer;
+mod claim_issuer {
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/claim_issuer.wasm");
+}
 
 #[test]
 fn test_initialize() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -35,7 +37,7 @@ fn test_add_key() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -58,7 +60,7 @@ fn test_add_key_with_different_purpose() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -90,7 +92,7 @@ fn test_remove_key() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -127,10 +129,10 @@ fn test_add_claim() {
         "GARPZXSZVTI7WG3ADZQB5QGH67WS6XW6ISHIO2N4AOAC32PLNYBH7QCY",
     ));
 
-    let issuer_contract_id = env.register_contract_wasm(None, claim_issuer::WASM);
+    let issuer_contract_id = env.register(claim_issuer::WASM, ());
     let issuer_client = claim_issuer::Client::new(&env, &issuer_contract_id);
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     std::println!("Issuer Contract ID: {:?}", issuer_contract_id);
@@ -207,10 +209,10 @@ fn test_remove_claim() {
         "GARPZXSZVTI7WG3ADZQB5QGH67WS6XW6ISHIO2N4AOAC32PLNYBH7QCY",
     ));
 
-    let issuer_contract_id = env.register_contract_wasm(None, claim_issuer::WASM);
+    let issuer_contract_id = env.register(claim_issuer::WASM, ());
     let issuer_client = claim_issuer::Client::new(&env, &issuer_contract_id);
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -281,7 +283,7 @@ fn test_revoke_claim() {
     let issuer_contract_id = env.register_contract_wasm(None, claim_issuer::WASM);
     let issuer_client = claim_issuer::Client::new(&env, &issuer_contract_id);
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);
@@ -346,7 +348,7 @@ fn test_is_claim_valid() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_id = env.register_contract(None, IdentityContract);
+    let contract_id = env.register(IdentityContract, ());
     let client = IdentityContractClient::new(&env, &contract_id);
 
     let management_key = Address::generate(&env);

@@ -1,22 +1,17 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, symbol_short, Address, BytesN, Bytes, Env, Symbol, U256,FromVal, xdr::ToXdr
+    contract, contracterror, contractimpl, symbol_short, xdr::ToXdr, Address, Bytes, BytesN, Env,
+    FromVal, Symbol, U256,
 };
 
 mod factory {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/factory.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/factory.wasm");
 }
 mod claim_issuer {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/claim_issuer.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/claim_issuer.wasm");
 }
 mod identity {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/identity.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/identity.wasm");
 }
 
 #[contracterror]
@@ -73,17 +68,20 @@ impl GatedContract {
         Ok(())
     }
 
-
     pub fn set_claim_issuer(env: Env, issuer: Address) {
         only_owner(&env);
 
-        env.storage().persistent().set(&symbol_short!("issuer"), &issuer);
+        env.storage()
+            .persistent()
+            .set(&symbol_short!("issuer"), &issuer);
     }
 
     pub fn set_identity_factory(env: Env, factory: Address) {
         only_owner(&env);
 
-        env.storage().persistent().set(&symbol_short!("factory"), &factory);
+        env.storage()
+            .persistent()
+            .set(&symbol_short!("factory"), &factory);
     }
 
     // Validate a claim
@@ -92,11 +90,16 @@ impl GatedContract {
     // 3. Get the claim from the identity
     // 4. Extract topic, signature, data from the claim
     // 4. Call is_claim_valid on the claim issuer
-    pub fn validate_claim(env: Env, sender: Address,  issuer: Address, required_topic: U256) -> bool {
-
+    pub fn validate_claim(
+        env: Env,
+        sender: Address,
+        issuer: Address,
+        required_topic: U256,
+    ) -> bool {
         // Get the factory address
-        let factory_address = env.storage()
-        .persistent()
+        let factory_address = env
+            .storage()
+            .persistent()
             .get(&symbol_short!("factory"))
             .unwrap();
 
@@ -118,8 +121,13 @@ impl GatedContract {
 
         // Get the claim issuer client
         let issuer_client = claim_issuer::Client::new(&env, &issuer);
-        return  issuer_client.is_claim_valid(&claim.issuer_wallet, &user_identity, &claim.topic, &claim.signature, &claim.data);
-
+        return issuer_client.is_claim_valid(
+            &claim.issuer_wallet,
+            &user_identity,
+            &claim.topic,
+            &claim.signature,
+            &claim.data,
+        );
     }
 
     pub fn get_owner(env: Env) -> Address {
@@ -147,7 +155,7 @@ fn hash_claim(env: &Env, issuer: &Address, topic: &U256) -> BytesN<32> {
     let mut concatenated_bytes = Bytes::new(env);
     concatenated_bytes.append(&address_bytes);
     concatenated_bytes.append(&topic_bytes);
-    env.crypto().keccak256(&concatenated_bytes)
+    env.crypto().keccak256(&concatenated_bytes).to_bytes()
 }
 
 fn only_owner(env: &Env) -> Address {
@@ -160,6 +168,5 @@ fn only_owner(env: &Env) -> Address {
 
     owner
 }
-
 
 mod test;

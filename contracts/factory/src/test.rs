@@ -4,13 +4,12 @@ extern crate std;
 use super::*;
 use soroban_sdk::{testutils::Address as _, Address, Env};
 
-
 #[test]
 fn test_linking() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let factory_contract_id = env.register_contract(None, FactoryContract);
+    let factory_contract_id = env.register(FactoryContract, ());
     let factory_client = FactoryContractClient::new(&env, &factory_contract_id);
 
     let owner = Address::generate(&env);
@@ -26,5 +25,8 @@ fn test_linking() {
     // Get the identity
     let linked_identity = factory_client.get_identity(&wallet);
 
-    assert!(linked_identity == identity, "Identity should be linked to wallet");
+    assert!(
+        linked_identity == identity,
+        "Identity should be linked to wallet"
+    );
 }

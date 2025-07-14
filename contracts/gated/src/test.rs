@@ -7,19 +7,27 @@ use soroban_sdk::testutils::ed25519::Sign;
 use soroban_sdk::xdr::ScVal;
 use soroban_sdk::{testutils::Address as _, Address, Env};
 
-use crate::claim_issuer;
-use crate::factory;
-use crate::identity;
+// use crate::claim_issuer;
+
+mod claim_issuer {
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/claim_issuer.wasm");
+}
+mod identity {
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/identity.wasm");
+}
+mod factory {
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/factory.wasm");
+}
 
 #[test]
 fn test_initialize() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let gated_contract_id = env.register_contract(None, GatedContract);
+    let gated_contract_id = env.register(GatedContract, ());
     let gated_client = GatedContractClient::new(&env, &gated_contract_id);
 
-    let factory_contract_id = env.register_contract_wasm(None, factory::WASM);
+    let factory_contract_id = env.register(factory::WASM, ());
     let claim_issuer_contract_id = env.register_contract_wasm(None, claim_issuer::WASM);
 
     let owner = Address::generate(&env);
@@ -48,25 +56,27 @@ fn test_validate_claim() {
         "GARPZXSZVTI7WG3ADZQB5QGH67WS6XW6ISHIO2N4AOAC32PLNYBH7QCY",
     ));
 
-
-    let gated_contract_id = env.register_contract(None, GatedContract);
+    let gated_contract_id = env.register(GatedContract, ());
     let gated_client = GatedContractClient::new(&env, &gated_contract_id);
 
-    let factory_contract_id = env.register_contract_wasm(None, factory::WASM);
+    let factory_contract_id = env.register(factory::WASM, ());
     let factory_client = factory::Client::new(&env, &factory_contract_id);
-    let claim_issuer_contract_id = env.register_contract_wasm(None, claim_issuer::WASM);
+    let claim_issuer_contract_id = env.register(claim_issuer::WASM, ());
     let claim_issuer_client = claim_issuer::Client::new(&env, &claim_issuer_contract_id);
-    let identity_contract_id = env.register_contract_wasm(None, identity::WASM);
+    let identity_contract_id = env.register(identity::WASM, ());
     let identity_client = identity::Client::new(&env, &identity_contract_id);
 
-    
     let management_key = Address::generate(&env);
     factory_client.initialize(&management_key);
     claim_issuer_client.initialize(&management_key);
     identity_client.initialize(&management_key);
-    gated_client.initialize(&factory_contract_id, &claim_issuer_contract_id, &management_key);
+    gated_client.initialize(
+        &factory_contract_id,
+        &claim_issuer_contract_id,
+        &management_key,
+    );
 
-    // Add Claim Key 
+    // Add Claim Key
     let claim_key = Address::generate(&env);
     identity_client.add_key(&management_key, &claim_key, &3, &1);
     claim_issuer_client.add_key(&management_key, &issuer_wallet, &3, &1);
@@ -82,7 +92,8 @@ fn test_validate_claim() {
 
     assert!(
         linked_identity == identity_contract_id,
-        "Identity should be linked to wallet");
+        "Identity should be linked to wallet"
+    );
 
     // Create Claim
     let topic = U256::from_u32(&env, 6);
@@ -132,6 +143,4 @@ fn test_validate_claim() {
         true,
         "Claim should be valid"
     );
-
-    
 }
