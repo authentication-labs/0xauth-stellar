@@ -2,8 +2,8 @@
 
 # Deploy Claim Issuer Contract with the wasm hash
 echo "Deploying Claim Issuer Contract..."
-DEPLOY_OUTPUT=$(soroban contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/claim_issuer.wasm \
+DEPLOY_OUTPUT=$(stellar contract deploy \
+  --wasm target/wasm32v1-none/release/claim_issuer.wasm \
   --source issuer \
   --network testnet)
 echo "Deploy Output:"
@@ -17,7 +17,7 @@ echo
 
 # Initialize Claim Issuer Contract
 echo "Initializing Claim Issuer Contract..."
-INITIALIZE_OUTPUT=$(soroban contract invoke \
+INITIALIZE_OUTPUT=$(stellar contract invoke \
   --id $CLAIM_ISSUER_CONTRACT_ID \
   --source issuer \
   --network testnet \
@@ -29,7 +29,7 @@ echo
 
 # Add Claim Issuer Claim Key
 echo "Adding Claim Issuer Claim Key..."
-ADD_KEY_OUTPUT=$(soroban contract invoke \
+ADD_KEY_OUTPUT=$(stellar contract invoke \
   --id $CLAIM_ISSUER_CONTRACT_ID \
   --source issuer \
   --network testnet \

@@ -12,15 +12,6 @@ const FUND_ID: Symbol = symbol_short!("FUND_ID");
 const ADMIN: Symbol = symbol_short!("ADMIN");
 const ADDRESSES: Symbol = symbol_short!("ADDRS");
 
-// This is a sample contract. Replace this placeholder with your own contract logic.
-// A corresponding test example is available in `test.rs`.
-//
-// For comprehensive examples, visit <https://github.com/stellar/soroban-examples>.
-// The repository includes use cases for the Stellar ecosystem, such as data storage on
-// the blockchain, token swaps, liquidity pools, and more.
-//
-// Refer to the official documentation:
-// <https://developers.stellar.org/docs/build/smart-contracts/overview>.
 #[contractimpl]
 impl AccessRegistryContract {
     pub fn initialize(env: Env, fund_id: String, admin: Address) -> Result<(), Error> {
