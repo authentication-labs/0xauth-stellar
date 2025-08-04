@@ -10,6 +10,8 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true }
+secp256k1 = {version = '0.31.1' ,features=["rand", "hashes"]}
+
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }

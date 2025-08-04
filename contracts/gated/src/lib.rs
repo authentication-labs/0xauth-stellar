@@ -1,4 +1,5 @@
 #![no_std]
+use serde;
 use soroban_sdk::{
     contract, contracterror, contractimpl, symbol_short, xdr::ToXdr, Address, Bytes, BytesN, Env,
     FromVal, Symbol, U256,
@@ -21,6 +22,7 @@ pub enum Error {
     AlreadyInitialized = 1,
     InsufficientPermissions = 2,
     IdentityNotFound = 3,
+    NotInitialized = 4,
 }
 
 #[contract]
