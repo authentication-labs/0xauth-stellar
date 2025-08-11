@@ -1647,6 +1647,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "token"
+version = "0.0.0"
+dependencies = [
+ "base32",
+ "crc16",
+ "ed25519-dalek",
+ "hex",
+ "rand 0.8.5",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "trex"
 version = "0.0.0"
 dependencies = [
