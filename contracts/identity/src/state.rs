@@ -82,4 +82,5 @@ pub enum Error {
     InvalidAddressBytes = 14,
     JsonParseError = 15,
     ClientDataJsonChallengeIncorrect = 16,
+    NotInitialized = 17,
 }

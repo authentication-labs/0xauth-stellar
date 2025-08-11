@@ -1,6 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, symbol_short, Address, BytesN, Env, Symbol, Val, Vec,
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, BytesN, Env,
+    Symbol, Val, Vec,
 };
 
 #[contracterror]
@@ -11,8 +12,6 @@ pub enum Error {
     InsufficientPermissions = 2,
     NotInitiated = 3,
 }
-
-type PubKey = BytesN<65>;
 
 #[contract]
 pub struct FactoryContract;
@@ -73,7 +72,7 @@ impl FactoryContract {
 
     pub fn create_identity(
         env: Env,
-        pub_key: PubKey,
+        pub_key: BytesN<65>,
         salt: BytesN<32>,
         init_fn: Symbol,
         init_args: Vec<Val>,
@@ -98,7 +97,7 @@ impl FactoryContract {
         let mut pub_keys = env
             .storage()
             .instance()
-            .get::<Address, Vec<PubKey>>(&identity_address)
+            .get::<Address, Vec<BytesN<65>>>(&identity_address)
             .unwrap_or(Vec::new(&env));
 
         pub_keys.push_back(pub_key.clone());
@@ -113,13 +112,13 @@ impl FactoryContract {
         Ok((identity_address, res))
     }
 
-    pub fn link_pubkey(env: Env, pub_key: PubKey, identity: Address) {
+    pub fn link_pubkey(env: Env, pub_key: BytesN<65>, identity: Address) {
         only_owner(&env);
 
         let mut pub_keys = env
             .storage()
             .instance()
-            .get::<Address, Vec<PubKey>>(&identity)
+            .get::<Address, Vec<BytesN<65>>>(&identity)
             .unwrap_or(Vec::new(&env));
 
         pub_keys.push_back(pub_key.clone());
@@ -132,13 +131,13 @@ impl FactoryContract {
             .publish((Symbol::new(&env, "link_pk"),), (pub_key, identity));
     }
 
-    pub fn unlink_wallet(env: Env, pub_key: PubKey, identity: Address) {
+    pub fn unlink_pubkey(env: Env, pub_key: BytesN<65>, identity: Address) {
         only_owner(&env);
 
         let mut pub_keys = env
             .storage()
             .instance()
-            .get::<Address, Vec<PubKey>>(&identity)
+            .get::<Address, Vec<BytesN<65>>>(&identity)
             .unwrap_or(Vec::new(&env));
 
         if pub_keys.contains(&pub_key) {
@@ -164,7 +163,7 @@ impl FactoryContract {
         pub_keys
     }
 
-    pub fn get_identity(env: Env, pk: PubKey) -> Address {
+    pub fn get_identity(env: Env, pk: BytesN<65>) -> Address {
         let identity: Address = env.storage().instance().get(&pk).unwrap();
         identity
     }

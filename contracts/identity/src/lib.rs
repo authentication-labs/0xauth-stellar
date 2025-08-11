@@ -284,8 +284,17 @@ impl IdentityContract {
         Ok(claim_id)
     }
 
+    pub fn get_publickey(env: Env) -> Result<BytesN<65>, Error> {
+        env.storage()
+            .instance()
+            .get::<Symbol, BytesN<65>>(&STORAGE_KEY_PK)
+            .ok_or(Error::NotInitialized)
+    }
     pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error> {
-        identity_require_auth(&env, &sender, KeyPurpose::Claim)?;
+        // check if sender has `claim key` otherwise check if passkey hash authorized
+        if identity_require_auth(&env, &sender, KeyPurpose::Claim).is_err() {
+            env.current_contract_address().require_auth();
+        }
 
         let claim = env
             .storage()

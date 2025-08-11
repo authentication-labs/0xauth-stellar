@@ -1,79 +1,34 @@
-./scripts/deploy_claim_issuer.sh
-
-Deploying Claim Issuer Contract...
-ℹ️  Skipping install because wasm already installed
-ℹ️  Using wasm hash 1d84eca97c17645933d40cb6bb71aeb22998c81a8f7cec732fd54e1c1cfbcc81
-ℹ️  Simulating deploy transaction…
-ℹ️  Transaction hash is 6c2e3622231e03d0a5fdea75ab847f2fd67f67c717a2ed51794a19e6c62a29b2
-🔗 https://stellar.expert/explorer/testnet/tx/6c2e3622231e03d0a5fdea75ab847f2fd67f67c717a2ed51794a19e6c62a29b2
-ℹ️  Signing transaction: 6c2e3622231e03d0a5fdea75ab847f2fd67f67c717a2ed51794a19e6c62a29b2
-🌎 Submitting deploy transaction…
-🔗 https://stellar.expert/explorer/testnet/contract/CCILFW6IVU4ICJZYSCUHFIFSKADC6OQWSGBA3R2B5Q2AFJ35AKBUNSIS
-✅ Deployed!
-Deploy Output:
-CCILFW6IVU4ICJZYSCUHFIFSKADC6OQWSGBA3R2B5Q2AFJ35AKBUNSIS
-
-Claim Issuer Contract ID: CCILFW6IVU4ICJZYSCUHFIFSKADC6OQWSGBA3R2B5Q2AFJ35AKBUNSIS
-
-Initializing Claim Issuer Contract...
-ℹ️  Signing transaction: c396a4981f3901525b891919a8a562806c57bd04f99657d6dbaa92c38c0760fe
-📅 CCILFW6IVU4ICJZYSCUHFIFSKADC6OQWSGBA3R2B5Q2AFJ35AKBUNSIS - Success - Event: [{"symbol":"initialized"}] = {"address":"GBISRSPRDGQ3OVFTQUR2FSXVJFKEJ4MKN55EVZLL7GUNERVUVKOXX74C"}
-Initialize Output:
-null
-
-Adding Claim Issuer Claim Key...
-ℹ️  Signing transaction: 38f57532e184ef2b80163e11e0f629a56d86d51c26aa58a1d147655ff075b8d1
-📅 CCILFW6IVU4ICJZYSCUHFIFSKADC6OQWSGBA3R2B5Q2AFJ35AKBUNSIS - Success - Event: [{"symbol":"add_key"}] = {"vec":[{"address":"GBISRSPRDGQ3OVFTQUR2FSXVJFKEJ4MKN55EVZLL7GUNERVUVKOXX74C"},{"address":"GBISRSPRDGQ3OVFTQUR2FSXVJFKEJ4MKN55EVZLL7GUNERVUVKOXX74C"},{"u32":3},{"u32":1}]}
-Add Key Output:
-null
-
-=========================
-
- ./scripts/deploy_identity.sh
-Installing Identity Contract...
-⚠️  `stellar contract install` has been deprecated in favor of `stellar contract upload`
-ℹ️  Skipping install because wasm already installed
-Identity WASM Hash: 39bbf35e3215c6ffa3abc3af407e75fbbbeab4256c11708873ca4c4337334163
-
-Deploying Factory Contract...
-ℹ️  Skipping install because wasm already installed
-ℹ️  Using wasm hash 4e4548f3b56d764ccd84546b32f531a32b15fa245d1135aacd69c26dd5b5f53e
-ℹ️  Simulating deploy transaction…
-ℹ️  Transaction hash is c5f518428a0fb67f094056278d630c7e0db09ab54994b103c2ee37c39246cdff
-🔗 https://stellar.expert/explorer/testnet/tx/c5f518428a0fb67f094056278d630c7e0db09ab54994b103c2ee37c39246cdff
-ℹ️  Signing transaction: c5f518428a0fb67f094056278d630c7e0db09ab54994b103c2ee37c39246cdff
-🌎 Submitting deploy transaction…
-🔗 https://stellar.expert/explorer/testnet/contract/CD566QWSUL2ZA5KPDEUATASUWX7GBXOPOWQLBFWED4AYLUTFD4A3OIHA
-✅ Deployed!
-Factory Contract ID: CD566QWSUL2ZA5KPDEUATASUWX7GBXOPOWQLBFWED4AYLUTFD4A3OIHA
-
-Initializing Factory Contract...
-ℹ️  Signing transaction: 7751a00cc82059c0cb95dbf645fe597bd95bcf39f51d64295e3765a136ed9dff
-📅 CD566QWSUL2ZA5KPDEUATASUWX7GBXOPOWQLBFWED4AYLUTFD4A3OIHA - Success - Event: [{"symbol":"initialized"}] = {"address":"GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"}
-Initialize Factory Output:
-null
-
-Deploying Identity Contract through Factory...
-ℹ️  Signing transaction: faea35b97fb1f59b163ed6b0aeeb46303d23f48982d8e350d27603f79c41b150
-📅 CA5FS5Q7C2AUQV5M3CKYMA53ERNGRWGBAO2VGYUCTJIV22K7EOE5INZR - Success - Event: [{"symbol":"initialized"}] = {"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}
-📅 CD566QWSUL2ZA5KPDEUATASUWX7GBXOPOWQLBFWED4AYLUTFD4A3OIHA - Success - Event: [{"symbol":"create_identity"}] = {"vec":[{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"},{"address":"CA5FS5Q7C2AUQV5M3CKYMA53ERNGRWGBAO2VGYUCTJIV22K7EOE5INZR"},{"bytes":"35ba6717ded394cded5bbc4e1fac54e46d6e4d7e780a713bba92f6b97dfc0cd4"},{"symbol":"initialize"},{"vec":[{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"}]}]}
-Identity Contract ID: CA5FS5Q7C2AUQV5M3CKYMA53ERNGRWGBAO2VGYUCTJIV22K7EOE5INZR
-
-Adding Identity Contract Claim Key...
-ℹ️  Signing transaction: b384742d4daf28b1ff82e5603debf7e3e66a69d9bc9846edfd31ef95e8776d50
-📅 CA5FS5Q7C2AUQV5M3CKYMA53ERNGRWGBAO2VGYUCTJIV22K7EOE5INZR - Success - Event: [{"symbol":"add_key"}] = {"vec":[{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"},{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"},{"u32":3},{"u32":1}]}
-Add Key Output:
-
-
-Script completed.
-
-
-====
-
-./scripts/install_access_registry.sh         
-Installing AccessRegistry Contract...
-⚠️  `stellar contract install` has been deprecated in favor of `stellar contract upload`
+$ stellar contract upload --network testnet --source factory --wasm "target/wasm32v1-none/release/identity.wasm"        
 ℹ️  Simulating install transaction…
-ℹ️  Signing transaction: e4f2169e6b3ca2aeaef7c6af118e2d94f9c9a928dd430d13eda9e7d26ea0cef8
+ℹ️  Signing transaction: f1a04a756104498ab7977fc6de52c37dc6a80771f42b0cff559714320bce1280
 🌎 Submitting install transaction…
-Registry WASM Hash: c622c6b23bacc3c008835f8a22315740982c9ecd55dc6ddc44a3e316c7039e28
+be2abb388164d5e6b6ed54c53d1993973faba0fc8507c9af995cc256418d587f
+
+====================================================================================
+$ stellar contract deploy --network testnet --source factory --wasm "target/wasm32v1-none/release/factory.wasm"
+ℹ️  Simulating install transaction…
+ℹ️  Signing transaction: 3a72a25f811e717fcef7b56cfaa261977208b25ce92a3f5eac3807472029d56d
+🌎 Submitting install transaction…
+ℹ️  Using wasm hash c23cc8312945c2a7016e0ff5d6fa8c7cf2172c2f1730870e81612a3f4d53263c
+ℹ️  Simulating deploy transaction…
+ℹ️  Transaction hash is 4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
+🔗 https://stellar.expert/explorer/testnet/tx/4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
+ℹ️  Signing transaction: 4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
+🌎 Submitting deploy transaction…
+🔗 https://stellar.expert/explorer/testnet/contract/CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS
+✅ Deployed!
+CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS
+
+===========================================================================================
+$ stellar contract invoke --id "CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS" --source factory --network testnet -- initialize --owner "GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK" --wasm_hash "be2abb388164d5e6b6ed54c53d1993973faba0fc8507c9af995cc256418d587f"
+ℹ️  Signing transaction: d06c540b975fe0b736bb1bcd7220acece9e61d25c102ff9e7493798045ea9034
+📅 CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS - Success - Event: [{"symbol":"initialized"}] = {"address":"GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"}
+null
+
+===========================================================================================
+
+To create identity
+
+stellar contract invoke --id "CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS" --network testnet --source factory -- create_identity --pub_key 04317ed8e629b79cfd4969f8423f34c1ed881007504aa712e3b71bff21a1c61d9441c35a8d970371cd270737755cd46324a303137db509dea7de7e5a5d20af2b5a --salt fc257ef9e22355805cdd5e55ab0145e2097824afbfc58f912175d0863c8828d3 --init_fn initialize  --init_args "[{\"address\":\"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB\"},{\"bytes\":\"04317ed8e629b79cfd4969f8423f34c1ed881007504aa712e3b71bff21a1c61d9441c35a8d970371cd270737755cd46324a303137db509dea7de7e5a5d20af2b5a\"}]"
+
+
