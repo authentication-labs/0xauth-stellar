@@ -1,30 +1,32 @@
-$ stellar contract upload --network testnet --source factory --wasm "target/wasm32v1-none/release/identity.wasm"        
+$ stellar contract upload --network testnet --source factory --wasm "target/wasm32v1-none/release/identity.wasm"
+⚠️  A new release of stellar-cli is available: 23.0.0 -> 23.0.1
 ℹ️  Simulating install transaction…
-ℹ️  Signing transaction: f1a04a756104498ab7977fc6de52c37dc6a80771f42b0cff559714320bce1280
+ℹ️  Signing transaction: 778cb35423f5a63e920151b5203ca9855565cfa9347c5cbfa69d648594294e1f
 🌎 Submitting install transaction…
 be2abb388164d5e6b6ed54c53d1993973faba0fc8507c9af995cc256418d587f
 
 ====================================================================================
 $ stellar contract deploy --network testnet --source factory --wasm "target/wasm32v1-none/release/factory.wasm"
+⚠️  A new release of stellar-cli is available: 23.0.0 -> 23.0.1
 ℹ️  Simulating install transaction…
-ℹ️  Signing transaction: 3a72a25f811e717fcef7b56cfaa261977208b25ce92a3f5eac3807472029d56d
+ℹ️  Signing transaction: e88a4c74f109dac72c2710bdc3441aaa3b50332967800aa776db19c4479a7f91
 🌎 Submitting install transaction…
 ℹ️  Using wasm hash c23cc8312945c2a7016e0ff5d6fa8c7cf2172c2f1730870e81612a3f4d53263c
 ℹ️  Simulating deploy transaction…
-ℹ️  Transaction hash is 4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
-🔗 https://stellar.expert/explorer/testnet/tx/4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
-ℹ️  Signing transaction: 4e768f18d2c816c71d0e747943e6ca550fc79539913fb9d582d3152347e1f262
+ℹ️  Transaction hash is ce72fa4d9b990310cf273a8e4a283e70c004269c50aaf88b114bca8c1a50eb6d
+🔗 https://stellar.expert/explorer/testnet/tx/ce72fa4d9b990310cf273a8e4a283e70c004269c50aaf88b114bca8c1a50eb6d
+ℹ️  Signing transaction: ce72fa4d9b990310cf273a8e4a283e70c004269c50aaf88b114bca8c1a50eb6d
 🌎 Submitting deploy transaction…
-🔗 https://stellar.expert/explorer/testnet/contract/CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS
+🔗 https://stellar.expert/explorer/testnet/contract/CA332URRGA7LDHZTBOX4LC7B6F4SUB34AD7P4SEDK5R2N4O4AISDR37E
 ✅ Deployed!
-CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS
+CA332URRGA7LDHZTBOX4LC7B6F4SUB34AD7P4SEDK5R2N4O4AISDR37E
 
 ===========================================================================================
-$ stellar contract invoke --id "CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS" --source factory --network testnet -- initialize --owner "GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK" --wasm_hash "be2abb388164d5e6b6ed54c53d1993973faba0fc8507c9af995cc256418d587f"
-ℹ️  Signing transaction: d06c540b975fe0b736bb1bcd7220acece9e61d25c102ff9e7493798045ea9034
-📅 CA24VF2WO6DE2TAE2TVSHQPLNDMSZL4BELCNBLF5OVFLVPRPY56IGCAS - Success - Event: [{"symbol":"initialized"}] = {"address":"GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"}
+$ stellar contract invoke --id "CA332URRGA7LDHZTBOX4LC7B6F4SUB34AD7P4SEDK5R2N4O4AISDR37E" --source factory --network testnet -- initialize --owner "GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK" --wasm_hash "be2abb388164d5e6b6ed54c53d1993973faba0fc8507c9af995cc256418d587f"
+ A new release of stellar-cli is available: 23.0.0 -> 23.0.1
+ℹ️  Signing transaction: 13252f0fb6351e7911e00f3dd4d7c5b65ed43b7af9db15e18293730248085b0c
+📅 CA332URRGA7LDHZTBOX4LC7B6F4SUB34AD7P4SEDK5R2N4O4AISDR37E - Success - Event: [{"symbol":"initialized"}] = {"address":"GAGYMEUBOIWGFVSBXJSGV62HCSPNEJO6FJMLQDVPKN326BO6RBINRUFK"}
 null
-
 ===========================================================================================
 
 To create identity
