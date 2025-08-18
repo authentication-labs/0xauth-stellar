@@ -5,14 +5,10 @@ use soroban_sdk::{
 };
 
 mod identity {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/identity.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/identity.wasm");
 }
 mod claim_issuer {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/claim_issuer.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/claim_issuer.wasm");
 }
 
 mod state;
@@ -261,7 +257,17 @@ impl ClaimIssuerContract {
 
         env.events().publish(
             (symbol_short!("add_claim"),),
-            (sender, claim_id.clone(), claim.topic, claim.scheme, claim.issuer, claim.issuer_wallet,claim.signature, claim.data, claim.uri)
+            (
+                sender,
+                claim_id.clone(),
+                claim.topic,
+                claim.scheme,
+                claim.issuer,
+                claim.issuer_wallet,
+                claim.signature,
+                claim.data,
+                claim.uri,
+            ),
         );
 
         Ok(claim_id)
@@ -294,10 +300,8 @@ impl ClaimIssuerContract {
 
         log!(&env, "Claim removed: {:?}", claim);
 
-        env.events().publish(
-            (Symbol::new(&env, "remove_claim"),),
-            (sender, claim_id)
-        );
+        env.events()
+            .publish((Symbol::new(&env, "remove_claim"),), (sender, claim_id));
 
         Ok(())
     }
@@ -365,10 +369,8 @@ impl ClaimIssuerContract {
 
         env.storage().persistent().set(&revoked_symbol, &claims);
 
-        env.events().publish(
-            (Symbol::new(&env, "revoke_claim"),),
-            (sender, claim_id)
-        );
+        env.events()
+            .publish((Symbol::new(&env, "revoke_claim"),), (sender, claim_id));
 
         Ok(())
     }
@@ -388,7 +390,7 @@ impl ClaimIssuerContract {
 
 fn hash_key(env: &Env, key: &Address) -> BytesN<32> {
     let address_bytes = Bytes::from_val(env, &key.to_xdr(&env));
-    env.crypto().keccak256(&address_bytes)
+    env.crypto().keccak256(&address_bytes).to_bytes()
 }
 
 fn hash_claim(env: &Env, issuer: &Address, topic: &U256) -> BytesN<32> {
@@ -398,7 +400,7 @@ fn hash_claim(env: &Env, issuer: &Address, topic: &U256) -> BytesN<32> {
     let mut concatenated_bytes = Bytes::new(env);
     concatenated_bytes.append(&address_bytes);
     concatenated_bytes.append(&topic_bytes);
-    env.crypto().keccak256(&concatenated_bytes)
+    env.crypto().keccak256(&concatenated_bytes).to_bytes()
 }
 
 fn key_has_purpose(env: &Env, key_hash: &BytesN<32>, purpose: KeyPurpose) -> bool {

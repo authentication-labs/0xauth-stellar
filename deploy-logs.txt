@@ -1,0 +1,12 @@
+humayunjaved@Humayuns-MacBook-Pro 0xauth-stellar % soroban contract invoke \
+  --id $IDENTITY_CONTRACT_ID \
+  --source manager \
+  --network testnet \
+  -- \
+  add_key --manager GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --key GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB --purpose 3 --key_type 1
+ℹ️  Signing transaction: d3ef6e27d5ffca7b4a19b9b9b5da6e916535dd96c6de6a24f73d35fe5d76939c
+📅 CAXVHJVGC3TPMKBS7OPKM44KXDPTFSE7OVZXNFBSNCOYB2QATAPOSFYL - Event: [{"symbol":"add_key"}] = {"vec":[{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"},{"address":"GCKDZSO5Z2XLD4LJSA67ER3YSRBHYGRZN2PTANPK25THWKB72T3S5XSB"},{"u32":3},{"u32":1}]}
+null
+humayunjaved@Humayuns-MacBook-Pro 0xauth-stellar % 
+
+

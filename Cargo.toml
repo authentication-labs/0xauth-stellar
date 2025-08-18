@@ -5,7 +5,8 @@ members = [
 ]
 
 [workspace.dependencies]
-soroban-sdk = "20.3.2"
+soroban-sdk = { version = "23.0.0-rc.2.4" }
+secp256k1 = {version = '0.31.1' ,features=["rand", "hashes"]}
 
 [profile.release]
 opt-level = "z"
@@ -16,6 +17,7 @@ debug-assertions = false
 panic = "abort"
 codegen-units = 1
 lto = true
+
 
 # For more information about this profile see https://soroban.stellar.org/docs/basic-tutorials/logging#cargotoml-profile
 [profile.release-with-logs]

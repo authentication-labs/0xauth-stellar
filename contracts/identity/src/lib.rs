@@ -1,24 +1,30 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contractimpl, log, symbol_short, vec, xdr::ToXdr, Address, Bytes, BytesN, Env,
-    FromVal, Symbol, Vec, U256,
+    auth::CustomAccountInterface, contract, contractimpl, contracttype, crypto::Hash, log,
+    symbol_short, vec, xdr::ToXdr, Address, Bytes, BytesN, Env, FromVal, Symbol, Vec, U256,
 };
 
 mod state;
 use state::{Claim, Error, Key, KeyPurpose, KeyType};
 
 mod claim_issuer {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/claim_issuer.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/claim_issuer.wasm");
 }
+
+const STORAGE_KEY_PK: Symbol = symbol_short!("pk");
 
 #[contract]
 pub struct IdentityContract;
 
 #[contractimpl]
 impl IdentityContract {
+    pub fn extend_ttl(env: Env) {
+        let max_ttl = env.storage().max_ttl();
+
+        env.storage().instance().extend_ttl(max_ttl, max_ttl);
+    }
+
     pub fn get_initialized(env: Env) -> Result<bool, Error> {
         Ok(env
             .storage()
@@ -27,7 +33,11 @@ impl IdentityContract {
             .unwrap_or(false))
     }
 
-    pub fn initialize(env: Env, initial_management_key: Address) -> Result<(), Error> {
+    pub fn initialize(
+        env: Env,
+        initial_management_key: Address,
+        passkey_pk: BytesN<65>,
+    ) -> Result<(), Error> {
         let init_symbol = Symbol::new(&env, "initialized");
 
         let initialized = env
@@ -39,9 +49,7 @@ impl IdentityContract {
         if initialized {
             return Err(Error::AlreadyInitialized);
         }
-        env.storage()
-            .instance()
-            .set(&init_symbol, &true);
+        env.storage().instance().set(&init_symbol, &true);
 
         let key_hash = hash_key(&env, &initial_management_key);
         let key = Key {
@@ -55,6 +63,8 @@ impl IdentityContract {
             .persistent()
             .set(&symbol_short!("keys"), &keys);
 
+        env.storage().instance().set(&STORAGE_KEY_PK, &passkey_pk);
+
         log!(
             &env,
             "Identity contract initialized with management key: {:?}",
@@ -62,6 +72,7 @@ impl IdentityContract {
         );
 
         env.events().publish((init_symbol,), initial_management_key);
+        Self::extend_ttl(env);
         Ok(())
     }
 
@@ -138,7 +149,7 @@ impl IdentityContract {
 
         env.events().publish(
             (symbol_short!("add_key"),),
-            (manager, key, purpose, key_type)
+            (manager, key, purpose, key_type),
         );
         Ok(())
     }
@@ -187,10 +198,8 @@ impl IdentityContract {
             .persistent()
             .set(&symbol_short!("keys"), &keys);
 
-        env.events().publish(
-            (Symbol::new(&env, "remove_key"),),
-            (manager, key, purpose)
-        );
+        env.events()
+            .publish((Symbol::new(&env, "remove_key"),), (manager, key, purpose));
         Ok(())
     }
 
@@ -259,14 +268,33 @@ impl IdentityContract {
 
         env.events().publish(
             (symbol_short!("add_claim"),),
-            (sender, claim_id.clone(), claim.topic, claim.scheme, claim.issuer, claim.issuer_wallet,claim.signature, claim.data, claim.uri)
+            (
+                sender,
+                claim_id.clone(),
+                claim.topic,
+                claim.scheme,
+                claim.issuer,
+                claim.issuer_wallet,
+                claim.signature,
+                claim.data,
+                claim.uri,
+            ),
         );
 
         Ok(claim_id)
     }
 
+    pub fn get_publickey(env: Env) -> Result<BytesN<65>, Error> {
+        env.storage()
+            .instance()
+            .get::<Symbol, BytesN<65>>(&STORAGE_KEY_PK)
+            .ok_or(Error::NotInitialized)
+    }
     pub fn remove_claim(env: Env, sender: Address, claim_id: BytesN<32>) -> Result<(), Error> {
-        identity_require_auth(&env, &sender, KeyPurpose::Claim)?;
+        // check if sender has `claim key` otherwise check if passkey hash authorized
+        if identity_require_auth(&env, &sender, KeyPurpose::Claim).is_err() {
+            env.current_contract_address().require_auth();
+        }
 
         let claim = env
             .storage()
@@ -292,10 +320,8 @@ impl IdentityContract {
 
         log!(&env, "Claim removed: {:?}", claim);
 
-        env.events().publish(
-            (Symbol::new(&env, "remove_claim"),),
-            (sender, claim_id)
-        );
+        env.events()
+            .publish((Symbol::new(&env, "remove_claim"),), (sender, claim_id));
         Ok(())
     }
 
@@ -339,7 +365,7 @@ impl IdentityContract {
 
 fn hash_key(env: &Env, key: &Address) -> BytesN<32> {
     let address_bytes = Bytes::from_val(env, &key.to_xdr(&env));
-    env.crypto().keccak256(&address_bytes)
+    env.crypto().keccak256(&address_bytes).to_bytes()
 }
 
 fn hash_claim(env: &Env, issuer: &Address, topic: &U256) -> BytesN<32> {
@@ -349,7 +375,7 @@ fn hash_claim(env: &Env, issuer: &Address, topic: &U256) -> BytesN<32> {
     let mut concatenated_bytes = Bytes::new(env);
     concatenated_bytes.append(&address_bytes);
     concatenated_bytes.append(&topic_bytes);
-    env.crypto().keccak256(&concatenated_bytes)
+    env.crypto().keccak256(&concatenated_bytes).to_bytes()
 }
 
 fn key_has_purpose(env: &Env, key_hash: &BytesN<32>, purpose: KeyPurpose) -> bool {
@@ -375,4 +401,60 @@ fn identity_require_auth(env: &Env, sender: &Address, key_type: KeyPurpose) -> R
     Ok(())
 }
 
+#[contracttype]
+pub struct Signature {
+    pub authenticator_data: Bytes,
+    pub client_data_json: Bytes,
+    pub signature: BytesN<64>,
+}
+
+#[derive(serde::Deserialize)]
+struct ClientDataJson<'a> {
+    challenge: &'a str,
+}
+
+impl CustomAccountInterface for IdentityContract {
+    type Signature = Signature;
+
+    type Error = Error;
+
+    fn __check_auth(
+        env: Env,
+        signature_payload: Hash<32>,
+        signature: Self::Signature,
+        _auth_contexts: soroban_sdk::Vec<soroban_sdk::auth::Context>,
+    ) -> Result<(), Self::Error> {
+        let pk = env
+            .storage()
+            .instance()
+            .get(&STORAGE_KEY_PK)
+            .ok_or(Error::AlreadyInitialized)?;
+
+        let mut paylaod = Bytes::new(&env);
+
+        paylaod.append(&signature.authenticator_data);
+        paylaod.extend_from_array(&env.crypto().sha256(&signature.client_data_json).to_array());
+
+        let payload = env.crypto().sha256(&paylaod);
+
+        env.crypto()
+            .secp256r1_verify(&pk, &payload, &signature.signature);
+
+        let client_data_json = signature.client_data_json.to_buffer::<1024>();
+        let client_data_json = client_data_json.as_slice();
+
+        let (client_data, _): (ClientDataJson, _) =
+            serde_json_core::de::from_slice(client_data_json).map_err(|_| Error::JsonParseError)?;
+
+        let mut expected_challenge = *b"___________________________________________";
+        base64_url::encode(&mut expected_challenge, &signature_payload.to_array());
+
+        if client_data.challenge.as_bytes() != expected_challenge {
+            return Err(Error::ClientDataJsonChallengeIncorrect);
+        }
+        Ok(())
+    }
+}
+
+mod base64_url;
 mod test;

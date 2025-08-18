@@ -1,12 +1,10 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, symbol_short, Address, Env, Symbol, U256, token
+    contract, contracterror, contractimpl, symbol_short, token, Address, Env, Symbol, U256,
 };
 
 mod gated {
-    soroban_sdk::contractimport!(
-        file = "../../target/wasm32-unknown-unknown/release/gated.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/gated.wasm");
 }
 
 #[contracterror]
@@ -31,11 +29,7 @@ impl TrexContract {
             .unwrap_or(false))
     }
 
-    pub fn initialize(
-        env: Env,
-        gated_address: Address,
-        owner: Address,
-    ) -> Result<(), Error> {
+    pub fn initialize(env: Env, gated_address: Address, owner: Address) -> Result<(), Error> {
         let initialized = env
             .storage()
             .instance()
@@ -58,7 +52,13 @@ impl TrexContract {
 
         Ok(())
     }
-    pub fn transfer(env: Env, id: Address, from: Address, to: Address, amount: i128) -> Result<bool, Error> {
+    pub fn transfer(
+        env: Env,
+        id: Address,
+        from: Address,
+        to: Address,
+        amount: i128,
+    ) -> Result<bool, Error> {
         let token_client = token::Client::new(&env, &id);
 
         let gated_address: Address = env
@@ -81,7 +81,7 @@ impl TrexContract {
         token_client.transfer(&from, &to, &amount);
 
         return Ok(true);
-      }
+    }
 
     pub fn get_owner(env: Env) -> Address {
         let owner: Address = env
@@ -100,7 +100,6 @@ impl TrexContract {
             .set(&symbol_short!("owner"), &owner);
     }
 }
-
 
 fn only_owner(env: &Env) -> Address {
     let owner: Address = env
